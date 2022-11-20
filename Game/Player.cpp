@@ -4,6 +4,10 @@
 void Player::initVariables()
 {
 	animState = IDLE;
+	totalIdleTime = 0.0f;
+	idleTime = 0.3f;
+	totalRunTime = 0.0f;
+	runTime = 0.1f;
 }
 
 void Player::initTexture()
@@ -16,84 +20,106 @@ void Player::initTexture()
 
 void Player::initSprite()
 {
-	sprite.setTexture(this->texture);
-	currentFrame = sf::IntRect(0, 0, 40, 50);
-	sprite.setTextureRect(this->currentFrame);
-	sprite.setScale(3, 3);
+	sprite.setTexture(texture);
+	currentFrame = sf::IntRect(0.0f, 0.0f, 40.0f, 50.0f);
+	sprite.setTextureRect(currentFrame);
+	sprite.setScale(3.0f, 3.0f);
 }
 
 Player::Player()
 {
+	initVariables();
 	initTexture();
 	initSprite();
 }
 
-void Player::update()
+void Player::update(float deltaTime)
 {
-	updateMovement();
-	updateAnimation();
+	updateMovement(deltaTime);
+	updateAnimation(deltaTime);
 }
 
-void Player::updateMovement()
+void Player::updateMovement(float deltaTime)
 {
 	animState = IDLE;
+	float moveCoeff = 150.0f * deltaTime;
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 	{
-		sprite.move(-1, 0);
+		sprite.move(-moveCoeff, 0.0f);
 		animState = MOVING_LEFT;
+		sprite.setScale(-3.0f, 3.0f);
+		sprite.setOrigin(sprite.getGlobalBounds().width / 3.0f, 0.0f);
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 	{
-		sprite.move(1, 0);
+		sprite.move(moveCoeff, 0.0f);
 		animState = MOVING_RIGHT;
+		sprite.setScale(3.0f, 3.0f);
+		sprite.setOrigin(0, 0);
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 	{
-		sprite.move(0, -1);
+		sprite.move(0.0f, -moveCoeff);
 		animState = JUMPING;
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 	{
-		sprite.move(0, 1);
+		sprite.move(0.0f, moveCoeff);
 		animState = FALLING;
 	}
 }
 
-void Player::updateAnimation()
+void Player::updateAnimation(float deltaTime)
 {
 	switch (animState) {
 	case IDLE:
-		if (animDelay.getElapsedTime().asSeconds() >= 0.3)
+		totalIdleTime += deltaTime;
+		if (totalIdleTime >= idleTime)
 		{
+			totalIdleTime -= idleTime;
 			currentFrame.top = 0;
 			currentFrame.left += 40;
 			if (currentFrame.left > 160) {
 				currentFrame.left = 0;
 			}
-			
+
 			sprite.setTextureRect(currentFrame);
-			animDelay.restart();
 		}
+		totalRunTime = runTime;
 		break;
 	case MOVING_RIGHT:
-		if (animDelay.getElapsedTime().asMilliseconds() >= 50)
+		totalRunTime += deltaTime;
+		if (totalRunTime >= runTime)
 		{
+			totalRunTime -= runTime;
 			currentFrame.top = 50;
 			currentFrame.left += 40;
-
 			if (currentFrame.left > 360) {
 				currentFrame.left = 0;
 			}
 
-			
 			sprite.setTextureRect(currentFrame);
-			animDelay.restart();
 		}
+		totalIdleTime = idleTime;
+		break;
+	case MOVING_LEFT:
+		totalRunTime += deltaTime;
+		if (totalRunTime >= runTime)
+		{
+			totalRunTime -= runTime;
+			currentFrame.top = 50;
+			currentFrame.left += 40;
+			if (currentFrame.left > 360) {
+				currentFrame.left = 0;
+			}
+
+			sprite.setTextureRect(currentFrame);
+		}
+		totalIdleTime = idleTime;
 		break;
 	}
-
 	
 }
 

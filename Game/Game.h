@@ -9,6 +9,7 @@ private:
 
 	sf::RenderWindow window;
 	sf::Event e;
+	float deltaTime;
 
 	//Player
 	Player* player;
@@ -23,6 +24,8 @@ public:
 	//Accessors
 
 	const sf::RenderWindow& getWindow() const;
+	const float getDeltaTime() const;
+	void setDeltaTime(float deltaTime);
 
 	//Methods
 

@@ -14,7 +14,6 @@ void Game::updatePollEvent()
 void Game::initWindow()
 {
 	this->window.create(sf::VideoMode(800, 600), "Game", sf::Style::Close);
-	this->window.setFramerateLimit(144);
 }
 
 void Game::initPlayer()
@@ -38,6 +37,16 @@ const sf::RenderWindow& Game::getWindow() const
 	return this->window;
 }
 
+const float Game::getDeltaTime() const
+{
+	return deltaTime;
+}
+
+void Game::setDeltaTime(float deltaTime)
+{
+	this->deltaTime = deltaTime;
+}
+
 void Game::update()
 {
 	this->updatePollEvent();
@@ -47,7 +56,7 @@ void Game::update()
 
 void Game::updatePlayer()
 {
-	this->player->update();
+	this->player->update(deltaTime);
 }
 
 void Game::render()

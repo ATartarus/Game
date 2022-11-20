@@ -17,7 +17,10 @@ private:
 
 	sf::IntRect currentFrame;
 	Animation_State animState;
-	sf::Clock animDelay;
+	float totalIdleTime;
+	float idleTime;
+	float totalRunTime;
+	float runTime;
 
 	void initVariables();
 	void initTexture();
@@ -25,9 +28,9 @@ private:
 public:
 	Player();
 
-	void update();
-	void updateMovement();
-	void updateAnimation();
+	void update(float deltaTime);
+	void updateMovement(float deltaTime);
+	void updateAnimation(float deltaTime);
 	void render(sf::RenderWindow& target);
 };
 
