@@ -5,3 +5,11 @@
 #include <SFML/Network.hpp>
 #include <SFML/System.hpp>
 #include <iostream>
+
+enum Player_State {
+	IDLE = 0,
+	MOVING_LEFT,
+	MOVING_RIGHT,
+	JUMPING,
+	FALLING,
+};
