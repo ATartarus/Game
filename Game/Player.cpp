@@ -3,11 +3,14 @@
 
 void Player::initVariables()
 {
-	animState = IDLE;
+	playerState = IDLE;
 	totalIdleTime = 0.0f;
 	idleTime = 0.3f;
 	totalRunTime = 0.0f;
 	runTime = 0.1f;
+
+	velocity.x = 200.0f;
+	velocity.y = 0.0f;
 }
 
 void Player::initTexture()
@@ -21,7 +24,7 @@ void Player::initTexture()
 void Player::initSprite()
 {
 	sprite.setTexture(texture);
-	currentFrame = sf::IntRect(0.0f, 0.0f, 40.0f, 50.0f);
+	currentFrame = sf::IntRect(0, 0, 40, 50);
 	sprite.setTextureRect(currentFrame);
 	sprite.setScale(3.0f, 3.0f);
 }
@@ -33,6 +36,11 @@ Player::Player()
 	initSprite();
 }
 
+sf::Sprite Player::getSprite()
+{
+	return sprite;
+}
+
 void Player::update(float deltaTime)
 {
 	updateMovement(deltaTime);
@@ -41,39 +49,53 @@ void Player::update(float deltaTime)
 
 void Player::updateMovement(float deltaTime)
 {
-	animState = IDLE;
-	float moveCoeff = 150.0f * deltaTime;
+	playerState = IDLE;
+	if (falling) {
+		if (velocity.y < 0) playerState = JUMPING;
+		else playerState = FALLING;
+		velocity.y += 0.981f * deltaTime;
+		sprite.move(0.0f, velocity.y);
+	}
+	else {
+		velocity.y = 0;
+	}
+
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 	{
-		sprite.move(-moveCoeff, 0.0f);
-		animState = MOVING_LEFT;
+
+		sprite.move(-velocity.x * deltaTime, 0.0f);
+		playerState = MOVING_LEFT;
 		sprite.setScale(-3.0f, 3.0f);
 		sprite.setOrigin(sprite.getGlobalBounds().width / 3.0f, 0.0f);
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 	{
-		sprite.move(moveCoeff, 0.0f);
-		animState = MOVING_RIGHT;
+		sprite.move(velocity.x * deltaTime, 0.0f);
+		playerState = MOVING_RIGHT;
 		sprite.setScale(3.0f, 3.0f);
 		sprite.setOrigin(0, 0);
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 	{
-		sprite.move(0.0f, -moveCoeff);
-		animState = JUMPING;
+		if (!falling) {
+			velocity.y = -0.3;
+			sprite.move(0.0f, velocity.y);
+			playerState = JUMPING;
+		}
+
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::S) || sf::Keyboard::isKeyPressed(sf::Keyboard::Down))
 	{
-		sprite.move(0.0f, moveCoeff);
-		animState = FALLING;
+		sprite.move(0.0f, velocity.y);
+		playerState = FALLING;
 	}
 }
 
 void Player::updateAnimation(float deltaTime)
 {
-	switch (animState) {
+	switch (playerState) {
 	case IDLE:
 		totalIdleTime += deltaTime;
 		if (totalIdleTime >= idleTime)
@@ -118,6 +140,10 @@ void Player::updateAnimation(float deltaTime)
 			sprite.setTextureRect(currentFrame);
 		}
 		totalIdleTime = idleTime;
+		break;
+	
+	case JUMPING:
+
 		break;
 	}
 	

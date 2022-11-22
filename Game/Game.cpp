@@ -63,8 +63,18 @@ void Game::render()
 {
 	this->window.clear();
 
-	this->renderPlayer();
 
+
+	sf::RectangleShape* s = new sf::RectangleShape(sf::Vector2f(100,100));
+	s->setPosition(0, 300);
+	window.draw(*s);
+
+	if (!s->getGlobalBounds().intersects(player->getSprite().getGlobalBounds())) {
+		player->falling = true;
+	}
+	else player->falling = false;
+
+	this->renderPlayer();
 	this->window.display();
 }
 
