@@ -5,6 +5,9 @@ void Player::initVariables()
 {
 	playerState = IDLE;
 
+	veocityMax = 100.0f;
+	acceleration = 10.0f;
+	jumpVelocity = -0.35f;
 	velocity.x = 200.0f;
 	velocity.y = 0.0f;
 }
@@ -19,10 +22,10 @@ void Player::initTexture()
 
 void Player::initSprite()
 {
-	sprite.setTexture(texture);
-	currentFrame = sf::IntRect(0, 0, 40, 50);
-	sprite.setTextureRect(currentFrame);
-	sprite.setScale(3.0f, 3.0f);
+	spritesheetFrame = sf::IntRect(0, 0, 40, 50);
+	body = new SpriteHitBox(spritesheetFrame, sf::Vector2f(hitBoxWidth, hitBoxHeight));
+	body->sprite.setTexture(texture);
+	body->setScale(2.0f, 2.0f);
 }
 
 Player::Player()
@@ -30,13 +33,20 @@ Player::Player()
 	initVariables();
 	initTexture();
 	initSprite();
-	animation = new Animation(sprite, currentFrame);
+	animation = new Animation(body->sprite, spritesheetFrame);
 }
 
-sf::Sprite Player::getSprite()
+Player::~Player()
 {
-	return sprite;
+	delete body;
+	delete animation;
 }
+
+SpriteHitBox& Player::getBody()
+{
+	return *body;
+}
+
 
 void Player::update(float deltaTime)
 {
@@ -50,7 +60,7 @@ void Player::updateMovement(float deltaTime)
 		if (velocity.y < 0) playerState = JUMPING;
 		else playerState = FALLING;
 		velocity.y += 0.981f * deltaTime;
-		sprite.move(0.0f, velocity.y);
+		body->move(0.0f, velocity.y);
 	}
 	else {
 		velocity.y = 0;
@@ -60,24 +70,24 @@ void Player::updateMovement(float deltaTime)
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 	{
 
-		sprite.move(-velocity.x * deltaTime, 0.0f);
+		body->move(-velocity.x * deltaTime, 0.0f);
 		if (!falling) playerState = MOVING_LEFT;
-		sprite.setScale(-3.0f, 3.0f);
-		sprite.setOrigin(sprite.getGlobalBounds().width / 3.0f, 0.0f);
+		body->setScale(-2.0f, 2.0f);
+		body->sprite.setOrigin(body->sprite.getGlobalBounds().width / 2.0f, 0.0f);
 	}
 	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 	{
-		sprite.move(velocity.x * deltaTime, 0.0f);
+		body->move(velocity.x * deltaTime, 0.0f);
 		if (!falling) playerState = MOVING_RIGHT;
-		sprite.setScale(3.0f, 3.0f);
-		sprite.setOrigin(0, 0);
+		body->setScale(2.0f, 2.0f);
+		body->sprite.setOrigin(0, 0);
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 	{
 		if (!falling) {
 			velocity.y = jumpVelocity;
-			sprite.move(0.0f, velocity.y);
+			body->move(0.0f, velocity.y);
 			playerState = JUMPING;
 		}
 	}
@@ -88,6 +98,7 @@ void Player::updateMovement(float deltaTime)
 
 void Player::render(sf::RenderWindow& target)
 {
-	target.draw(sprite);
+	target.draw(body->sprite);
+	target.draw(body->hitBox);
 }
 
