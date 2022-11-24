@@ -1,17 +1,15 @@
 #include "Animation.h"
 
-Animation::Animation(sf::Sprite& sprite, sf::IntRect frame) :
-	sprite(sprite), idleSwitchTime(0.3f), runSwitchTime(0.1f), jumpSwitchTime(0.15f), fallSwitchTime(0.1f)
+Animation::Animation(sf::Sprite& sprite, sf::IntRect& frame) :
+	sprite(sprite), frame(frame)
 {
 	deltaTime = 0.1f;
-	this->frame = frame;
 
 	totalIdleTime = -1.0f;
 	totalRunTime = -1.0f;
 	totalJumpTime = -1.0f;
 	totalFallTime = -1.0f;
 }
-
 
 
 void Animation::setDeltaTime(float delta)

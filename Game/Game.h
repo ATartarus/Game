@@ -27,10 +27,13 @@ public:
 	const float getDeltaTime() const;
 	void setDeltaTime(float deltaTime);
 
-	//Methods
+	//Update
 
 	void update();
 	void updatePlayer();
+
+	//Render
+
 	void render();
 	void renderPlayer();
 };

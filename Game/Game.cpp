@@ -1,15 +1,7 @@
 #include "Game.h"
 
-void Game::updatePollEvent()
-{
-	while (this->window.pollEvent(this->e))
-	{
-		if (this->e.type == sf::Event::Closed)
-		{
-			this->window.close();
-		}
-	}
-}
+
+//Initialization
 
 void Game::initWindow()
 {
@@ -32,6 +24,8 @@ Game::~Game()
 	delete this->player;
 }
 
+//Accessors
+
 const sf::RenderWindow& Game::getWindow() const
 {
 	return this->window;
@@ -47,17 +41,39 @@ void Game::setDeltaTime(float deltaTime)
 	this->deltaTime = deltaTime;
 }
 
+//Update
+
 void Game::update()
 {
+	//std::cout << this->deltaTime << "\n";
+
+	//int sum = 0;
+	//for (int i = 0; i < 10000000; i++) {
+	//	sum += i;
+	//}
+
 	this->updatePollEvent();
 
 	this->updatePlayer();
+}
+
+void Game::updatePollEvent()
+{
+	while (this->window.pollEvent(this->e))
+	{
+		if (this->e.type == sf::Event::Closed)
+		{
+			this->window.close();
+		}
+	}
 }
 
 void Game::updatePlayer()
 {
 	this->player->update(deltaTime);
 }
+
+//Render
 
 void Game::render()
 {

@@ -1,16 +1,13 @@
 #include "SpriteHitBox.h"
 
-SpriteHitBox::SpriteHitBox(sf::IntRect spriteRect, sf::Vector2f hitBox)
+SpriteHitBox::SpriteHitBox(sf::IntRect& spriteFrame, sf::Vector2f hitBox)
 {
-	this->sprite = sf::Sprite();
-	this->sprite.setTextureRect(spriteRect);
+	this->sprite.setTextureRect(spriteFrame);
+	this->sprite.setPosition(200.0f, 200.0f);
+	this->sprite.setOrigin(spriteFrame.width / 2.0f, (float)spriteFrame.height);
 
-	this->sprite.setPosition(200, 200);
-
-	this->hitBox.setPosition(this->sprite.getPosition().x + spriteRect.width / 2,
-							 this->sprite.getPosition().y + spriteRect.height);
-	this->hitBox.setOrigin(hitBox.x / 2, hitBox.y + 1);
-
+	this->hitBox.setPosition(this->sprite.getPosition());
+	this->hitBox.setOrigin(hitBox.x / 2.0f, hitBox.y + 1.0f);
 	this->hitBox.setSize(hitBox);
 	this->hitBox.setFillColor(sf::Color::Transparent);
 	this->hitBox.setOutlineColor(sf::Color::Red);
@@ -19,15 +16,23 @@ SpriteHitBox::SpriteHitBox(sf::IntRect spriteRect, sf::Vector2f hitBox)
 
 void SpriteHitBox::move(float x, float y)
 {
+	if (x < 0) {
+		setScale(-abs(sprite.getScale().x), sprite.getScale().y);
+	}
+	else if (x > 0) {
+		setScale(abs(sprite.getScale().x), sprite.getScale().y);
+	}
 	sprite.move(x, y);
 	hitBox.move(x, y);
 }
 
+void SpriteHitBox::move(sf::Vector2f dir)
+{
+	move(dir.x, dir.y);
+}
+
 void SpriteHitBox::setScale(float x, float y)
 {
-	hitBox.setScale(x, y);
 	sprite.setScale(x, y);
-
-	sprite.setPosition(hitBox.getPosition().x - sprite.getGlobalBounds().width / 2,
-			           hitBox.getPosition().y - sprite.getGlobalBounds().height);
+	hitBox.setScale(x, y);
 }

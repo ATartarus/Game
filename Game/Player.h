@@ -13,15 +13,18 @@ private:
 	const float hitBoxWidth = 25.0f;
 
 	//Animation
-	sf::IntRect spritesheetFrame;
+	sf::IntRect* spritesheetFrame;
 	Player_State playerState;
 	Animation* animation;
 
 	//Physics
 	sf::Vector2f velocity;
-	float veocityMax;
+	float velocityMax;
 	float acceleration;
-	float jumpVelocity;
+	float deceleration;
+	float jumpHeight;
+
+
 
 	//Initialization
 	void initVariables();
@@ -35,10 +38,11 @@ public:
 	//Accessors
 	SpriteHitBox& getBody();
 
-
-	//Methods
+	//Update
 	void update(float deltaTime);
 	void updateMovement(float deltaTime);
+
+	//Render
 	void render(sf::RenderWindow& target);
 };
 
