@@ -1,5 +1,6 @@
 #pragma once
 #include "stdafx.h"
+#include "Map.h"
 #include "Player.h"
 
 class Game
@@ -11,12 +12,15 @@ private:
 	sf::Event e;
 	float deltaTime;
 
+	sf::RectangleShape rect;
+
+	//Map
+	Map* map;
+
 	//Player
 	Player* player;
 
 	void updatePollEvent();
-	void initWindow();
-	void initPlayer();
 public:
 	Game();
 	~Game();

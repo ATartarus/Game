@@ -5,6 +5,7 @@ int main()
 {
     Game game;
     sf::Clock clock;
+  
 
     while (game.getWindow().isOpen()) 
     {

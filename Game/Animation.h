@@ -1,12 +1,14 @@
 #pragma once
 #include "stdafx.h"
+#include "SpriteHitBox.h"
 
 class Animation
 {
 private:
-	float deltaTime;
 	sf::Sprite& sprite;
-	sf::IntRect& frame;
+	sf::IntRect frame;
+
+	float deltaTime;
 
 	float totalIdleTime;
 	float totalRunTime;
@@ -18,8 +20,10 @@ private:
 	const float jumpSwitchTime = 0.15f;
 	const float fallSwitchTime = 0.1f;
 
+	void initVariables();
 public:
-	Animation(sf::Sprite& sprite, sf::IntRect& frame);
+	Animation(sf::Sprite& sprite);
+	Animation(SpriteHitBox& entity);
 
 	void setDeltaTime(float delta);
 	void animate(Player_State state);

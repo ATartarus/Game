@@ -1,26 +1,26 @@
 #include "Game.h"
 
 
-//Initialization
+//Cons/Dest
 
-void Game::initWindow()
+Game::Game() 
 {
-	this->window.create(sf::VideoMode(800, 600), "Game", sf::Style::Close);
-}
-
-void Game::initPlayer()
-{
+	this->window.create(sf::VideoMode(960, 640), "Game", sf::Style::Close);
+	this->map = new Map("test.tmx");
 	this->player = new Player();
-}
+	player->setPosition(200.0f, 200.0f);
 
-Game::Game()
-{
-	this->initWindow();
-	this->initPlayer();
+	deltaTime = 0.0f;
+	e = sf::Event();
+
+	rect.setPosition(0.0f, 500.0f);
+	rect.setSize(sf::Vector2f(800.0f, 100.0f));
+	rect.setFillColor(sf::Color::White);
 }
 
 Game::~Game()
 {
+	delete this->map;
 	delete this->player;
 }
 
@@ -48,13 +48,22 @@ void Game::update()
 	//std::cout << this->deltaTime << "\n";
 
 	//int sum = 0;
-	//for (int i = 0; i < 10000000; i++) {
+	//for (int i = 0; i < 100000000; i++) {
 	//	sum += i;
 	//}
 
 	this->updatePollEvent();
 
 	this->updatePlayer();
+
+
+	if (!rect.getGlobalBounds().intersects(player->getBody().hitBox.getGlobalBounds())) {
+		player->falling = true;
+	}
+	else {
+		if (player->getState() == FALLING) player->getBody().move(0.0f,rect.getPosition().y - player->getBody().hitBox.getPosition().y);
+		player->falling = false;
+	}
 }
 
 void Game::updatePollEvent()
@@ -79,18 +88,8 @@ void Game::render()
 {
 	this->window.clear();
 
-	sf::RectangleShape rect;
-	rect.setPosition(0, 500);
-	rect.setSize(sf::Vector2f(800, 100));
 	window.draw(rect);
-
-	
-
-	if (!rect.getGlobalBounds().intersects(player->getBody().hitBox.getGlobalBounds())) {
-		player->falling = true;
-	}
-	else player->falling = false;
-
+	window.draw(*map);
 	this->renderPlayer();
 	this->window.display();
 }

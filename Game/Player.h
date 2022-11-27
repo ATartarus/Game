@@ -13,7 +13,6 @@ private:
 	const float hitBoxWidth = 25.0f;
 
 	//Animation
-	sf::IntRect* spritesheetFrame;
 	Player_State playerState;
 	Animation* animation;
 
@@ -37,10 +36,13 @@ public:
 
 	//Accessors
 	SpriteHitBox& getBody();
+	Player_State getState();
 
 	//Update
 	void update(float deltaTime);
 	void updateMovement(float deltaTime);
+	void setPosition(float x, float y);
+	void setPosition(sf::Vector2f pos);
 
 	//Render
 	void render(sf::RenderWindow& target);

@@ -1,8 +1,21 @@
 #include "Animation.h"
 
-Animation::Animation(sf::Sprite& sprite, sf::IntRect& frame) :
-	sprite(sprite), frame(frame)
+Animation::Animation(sf::Sprite& sprite) :
+	sprite(sprite)
 {
+	initVariables();
+}
+
+Animation::Animation(SpriteHitBox& entity) :
+	sprite(entity.sprite)
+{
+	initVariables();
+}
+
+
+void Animation::initVariables()
+{
+	frame = sprite.getTextureRect();
 	deltaTime = 0.1f;
 
 	totalIdleTime = -1.0f;

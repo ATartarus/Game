@@ -8,12 +8,11 @@ Player::Player()
 	initVariables();
 	initTexture();
 	initSprite();
-	animation = new Animation(body->sprite, *spritesheetFrame);
+	animation = new Animation(*body);
 }
 
 Player::~Player()
 {
-	delete spritesheetFrame;
 	delete body;
 	delete animation;
 }
@@ -22,9 +21,9 @@ void Player::initVariables()
 {
 	playerState = IDLE;
 
-	velocityMax = 360.0f;
+	velocityMax = 160.0f;
 	acceleration = 10.0f;
-	deceleration = acceleration / 5;
+	deceleration = acceleration * 3;
 	jumpHeight = 100.0f;
 	velocity.x = 0.0f;
 	velocity.y = 0.0f;
@@ -40,10 +39,10 @@ void Player::initTexture()
 
 void Player::initSprite()
 {
-	spritesheetFrame = new sf::IntRect(0, 0, 40, 50);
-	body = new SpriteHitBox(*spritesheetFrame, sf::Vector2f(hitBoxWidth, hitBoxHeight));
+	body = new SpriteHitBox(sf::IntRect(0, 0, 40, 50), sf::Vector2f(hitBoxWidth, hitBoxHeight));
 	body->sprite.setTexture(texture);
 	body->setScale(2.0f, 2.0f);
+	body->showHitBox = true;
 }
 
 //Accessors
@@ -51,6 +50,21 @@ void Player::initSprite()
 SpriteHitBox& Player::getBody()
 {
 	return *body;
+}
+
+void Player::setPosition(float x, float y)
+{
+	body->setPosition(x, y);
+}
+
+void Player::setPosition(sf::Vector2f pos)
+{
+	setPosition(pos.x, pos.y);
+}
+
+Player_State Player::getState()
+{
+	return playerState;
 }
 
 //Update
@@ -71,7 +85,7 @@ void Player::updateMovement(float deltaTime)
 		velocity.x -= acceleration;
 		playerState = MOVING_LEFT;
 	}
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 	{
 		velocity.x += acceleration;
 		playerState = MOVING_RIGHT;
@@ -81,7 +95,7 @@ void Player::updateMovement(float deltaTime)
 		velocity.x = (velocity.x < 0) ? -velocityMax : velocityMax;
 	if (playerState == IDLE && velocity.x != 0) {
 		velocity.x += (velocity.x < 0) ? deceleration : -deceleration;
-		if (fabs(velocity.x) < 1) velocity.x = 0;
+		if (fabs(velocity.x) < deceleration) velocity.x = 0;
 	}
 
 	/// </Velocity.x calculations>
@@ -118,7 +132,6 @@ void Player::updateMovement(float deltaTime)
 
 void Player::render(sf::RenderWindow& target)
 {
-	target.draw(body->sprite);
-	target.draw(body->hitBox);
+	target.draw(*body);
 }
 
