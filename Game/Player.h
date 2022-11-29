@@ -2,6 +2,7 @@
 #include "stdafx.h"
 #include "Animation.h"
 #include "SpriteHitBox.h"
+#include "Collider.h"
 
 class Player
 {
@@ -22,8 +23,7 @@ private:
 	float acceleration;
 	float deceleration;
 	float jumpHeight;
-
-
+	bool allowJump;
 
 	//Initialization
 	void initVariables();
@@ -32,17 +32,19 @@ private:
 public:
 	Player();
 	~Player();
-	bool falling = true;
+
+	bool showHitBox;
+	bool showOrigin;
 
 	//Accessors
-	SpriteHitBox& getBody();
-	Player_State getState();
+	void setPosition(float x, float y);
+	void setPosition(sf::Vector2f pos);
+	sf::Vector2f getPosition();
 
 	//Update
 	void update(float deltaTime);
 	void updateMovement(float deltaTime);
-	void setPosition(float x, float y);
-	void setPosition(sf::Vector2f pos);
+	void updateCollision(SpriteHitBox& tile);
 
 	//Render
 	void render(sf::RenderWindow& target);

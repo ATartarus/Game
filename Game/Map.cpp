@@ -62,8 +62,11 @@ void Map::loadMap(const char* map)
 	tilesheetGrid.y = tileSet->FindAttribute("tilecount")->IntValue() / tilesheetGrid.x;
 	tile.x = tileSet->FindAttribute("tilewidth")->IntValue();
 	tile.y = tileSet->FindAttribute("tileheight")->IntValue();
-	spacing = tileSet->FindAttribute("spacing")->IntValue();
-	margin = tileSet->FindAttribute("margin")->IntValue();
+	spacing = 0;
+	if (tileSet->Attribute("spacing")) spacing = tileSet->FindAttribute("spacing")->IntValue();
+	margin = 0;
+	if (tileSet->Attribute("margin")) margin = tileSet->FindAttribute("margin")->IntValue();
+	
 
 	path = folder + tileSet->FirstChildElement("image")->Attribute("source");
 
@@ -86,14 +89,13 @@ void Map::updateMap()
 		for (int j = 0; j < csvTileMap[0].size(); j++) {
 			if (!csvTileMap[i][j]) continue;
 
-			sf::Vector2f wpos = sf::Vector2f(j * tile.x + tile.x / 2, i * tile.y + tile.y);
+			sf::Vector2f wpos = sf::Vector2f(j * tile.x + tile.x / 2, i * tile.y + tile.y / 2);
 			sf::Vector2i spos = sf::Vector2i((csvTileMap[i][j] % tilesheetGrid.x - 1) * (tile.x + spacing),
 											 csvTileMap[i][j] / tilesheetGrid.x * (tile.y + margin));
-			SpriteHitBox* tmp = new SpriteHitBox(sf::IntRect(spos, tile), sf::Vector2f(tile.x, tile.y));
+			SpriteHitBox* tmp = new SpriteHitBox(sf::IntRect(spos, tile), sf::Vector2f(tile.x, tile.y), CENTER);
 
 			tmp->sprite.setTexture(tilesheet);
 			tmp->setPosition(wpos);
-			tmp->showHitBox = true;
 
 			tileMap->push_back(tmp);
 		}

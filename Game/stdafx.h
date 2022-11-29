@@ -6,10 +6,20 @@
 #include <SFML/System.hpp>
 #include <iostream>
 
-enum Player_State {
+enum Player_State
+{
 	IDLE = 0,
-	MOVING_LEFT,
-	MOVING_RIGHT,
-	JUMPING,
-	FALLING,
+	MOVING_LEFT = 1,
+	MOVING_RIGHT = (1 << 1),
+	JUMPING = (1 << 2),
+	FALLING = (1 << 3),
+};
+
+enum Origin_Pos {
+	DEFAULT = 0,
+	LEFT = 1,
+	RIGHT = 2,
+	TOP = 4,
+	CENTER = 8,
+	BOTTOM = 16,
 };

@@ -12,8 +12,6 @@ private:
 	sf::Event e;
 	float deltaTime;
 
-	sf::RectangleShape rect;
-
 	//Map
 	Map* map;
 

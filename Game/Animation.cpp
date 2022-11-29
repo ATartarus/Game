@@ -1,13 +1,13 @@
 #include "Animation.h"
 
 Animation::Animation(sf::Sprite& sprite) :
-	sprite(sprite)
+	sprite(sprite), entity(nullptr)
 {
 	initVariables();
 }
 
-Animation::Animation(SpriteHitBox& entity) :
-	sprite(entity.sprite)
+Animation::Animation(SpriteHitBox* entity) :
+	sprite(entity->sprite), entity(entity)
 {
 	initVariables();
 }
@@ -24,6 +24,12 @@ void Animation::initVariables()
 	totalFallTime = -1.0f;
 }
 
+void Animation::flip(bool right)
+{
+	if (right) entity->setScale(fabs(entity->getScale().x), entity->getScale().y);
+	else entity->setScale(-fabs(entity->getScale().x), entity->getScale().y);
+}
+
 
 void Animation::setDeltaTime(float delta)
 {
@@ -33,7 +39,7 @@ void Animation::setDeltaTime(float delta)
 void Animation::animate(Player_State state)
 {
 	switch (state) {
-	case IDLE:
+	case Player_State::IDLE:
 		if (totalIdleTime == -1) {
 			frame.left = -40;
 			totalIdleTime = idleSwitchTime;
@@ -55,69 +61,7 @@ void Animation::animate(Player_State state)
 		totalJumpTime = -1;
 		totalFallTime = -1;
 		break;
-	case FALLING:
-		if (totalFallTime == -1) {
-			totalFallTime = 0;
-		}
-
-		totalFallTime += deltaTime;
-		if (totalFallTime >= fallSwitchTime) 
-		{
-			totalFallTime -= fallSwitchTime;
-			frame.left = 40;
-			frame.top = 200;
-			sprite.setTextureRect(frame);
-		}
-
-		totalIdleTime = -1;
-		totalRunTime = -1;
-		totalJumpTime = -1;
-		break;
-	case MOVING_RIGHT:
-		if (totalRunTime == -1) {
-			frame.left = -40;
-			totalRunTime = runSwitchTime;
-		}
-
-		totalRunTime += deltaTime;
-		if (totalRunTime >= runSwitchTime)
-		{
-			totalRunTime -= runSwitchTime;
-			frame.top = 50;
-			frame.left += 40;
-			if (frame.left > 360) {
-				frame.left = 0;
-			}
-
-			sprite.setTextureRect(frame);
-		}
-		totalIdleTime = -1;
-		totalJumpTime = -1;
-		totalFallTime = -1;
-		break;
-	case MOVING_LEFT:
-		if (totalRunTime == -1) {
-			frame.left = -40;
-			totalRunTime = runSwitchTime;
-		}
-
-		totalRunTime += deltaTime;
-		if (totalRunTime >= runSwitchTime)
-		{
-			totalRunTime -= runSwitchTime;
-			frame.top = 50;
-			frame.left += 40;
-			if (frame.left > 360) {
-				frame.left = 0;
-			}
-
-			sprite.setTextureRect(frame);
-		}
-		totalIdleTime = -1;
-		totalJumpTime = -1;
-		totalFallTime = -1;
-		break;
-	case JUMPING:
+	case Player_State::JUMPING:
 		if (totalJumpTime == -1) {
 			frame.left = -40;
 			totalJumpTime = jumpSwitchTime;
@@ -137,6 +81,68 @@ void Animation::animate(Player_State state)
 
 		totalIdleTime = -1;
 		totalRunTime = -1;
+		totalFallTime = -1;
+		break;
+	case Player_State::FALLING:
+		if (totalFallTime == -1) {
+			totalFallTime = 0;
+		}
+
+		totalFallTime += deltaTime;
+		if (totalFallTime >= fallSwitchTime)
+		{
+			totalFallTime -= fallSwitchTime;
+			frame.left = 40;
+			frame.top = 200;
+			sprite.setTextureRect(frame);
+		}
+
+		totalIdleTime = -1;
+		totalRunTime = -1;
+		totalJumpTime = -1;
+		break;
+	case Player_State::MOVING_RIGHT:
+		if (totalRunTime == -1) {
+			frame.left = -40;
+			totalRunTime = runSwitchTime;
+		}
+
+		totalRunTime += deltaTime;
+		if (totalRunTime >= runSwitchTime)
+		{
+			totalRunTime -= runSwitchTime;
+			frame.top = 50;
+			frame.left += 40;
+			if (frame.left > 360) {
+				frame.left = 0;
+			}
+
+			sprite.setTextureRect(frame);
+		}
+		totalIdleTime = -1;
+		totalJumpTime = -1;
+		totalFallTime = -1;
+		break;
+	case Player_State::MOVING_LEFT:
+		if (totalRunTime == -1) {
+			frame.left = -40;
+			totalRunTime = runSwitchTime;
+		}
+
+		totalRunTime += deltaTime;
+		if (totalRunTime >= runSwitchTime)
+		{
+			totalRunTime -= runSwitchTime;
+			frame.top = 50;
+			frame.left += 40;
+			if (frame.left > 360) {
+				frame.left = 0;
+			}
+
+			sprite.setTextureRect(frame);
+		}
+		totalIdleTime = -1;
+		totalJumpTime = -1;
 		totalFallTime = -1;
 		break;
 	}

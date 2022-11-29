@@ -10,6 +10,7 @@ int main()
     while (game.getWindow().isOpen()) 
     {
         game.setDeltaTime(clock.restart().asSeconds());
+        if (game.getDeltaTime() > 1.0f / 30.0f) game.setDeltaTime(1.0f / 30.0f);
         game.update();
         game.render();
     }

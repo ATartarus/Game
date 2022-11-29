@@ -12,10 +12,6 @@ Game::Game()
 
 	deltaTime = 0.0f;
 	e = sf::Event();
-
-	rect.setPosition(0.0f, 500.0f);
-	rect.setSize(sf::Vector2f(800.0f, 100.0f));
-	rect.setFillColor(sf::Color::White);
 }
 
 Game::~Game()
@@ -52,18 +48,9 @@ void Game::update()
 	//	sum += i;
 	//}
 
-	this->updatePollEvent();
+	updatePollEvent();
 
-	this->updatePlayer();
-
-
-	if (!rect.getGlobalBounds().intersects(player->getBody().hitBox.getGlobalBounds())) {
-		player->falling = true;
-	}
-	else {
-		if (player->getState() == FALLING) player->getBody().move(0.0f,rect.getPosition().y - player->getBody().hitBox.getPosition().y);
-		player->falling = false;
-	}
+	updatePlayer();
 }
 
 void Game::updatePollEvent()
@@ -74,12 +61,25 @@ void Game::updatePollEvent()
 		{
 			this->window.close();
 		}
+		if (this->e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Tilde)
+		{
+			player->showHitBox = !player->showHitBox;
+			player->showOrigin = !player->showOrigin;
+			for (auto& tile : *(map->tileMap)) {
+				tile->showHitBox = !tile->showHitBox;
+				tile->showOrigin = !tile->showOrigin;
+			}
+		}
 	}
 }
 
 void Game::updatePlayer()
 {
 	this->player->update(deltaTime);
+	for (auto* tile : *(map->tileMap))
+	{
+		player->updateCollision(*tile);
+	}
 }
 
 //Render
@@ -88,9 +88,9 @@ void Game::render()
 {
 	this->window.clear();
 
-	window.draw(rect);
 	window.draw(*map);
 	this->renderPlayer();
+
 	this->window.display();
 }
 
