@@ -3,7 +3,10 @@
 
 //Initialization
 
-Player::Player() : Entity(sf::IntRect(0, 0, 40, 50), sf::Vector2f(18.0f, 42.0f), texture, Origin_Pos::BOTTOM | Origin_Pos::CENTER)
+Player::Player() : Entity(sf::IntRect(0, 0, 40, 50), 
+						  sf::Vector2f(18.0f, 42.0f),
+						  texture,
+						  Origin_Pos::BOTTOM | Origin_Pos::CENTER)
 {
 	initVariables();
 	initTexture();

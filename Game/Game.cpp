@@ -61,12 +61,17 @@ void Game::updatePollEvent()
 		{
 			this->window.close();
 		}
-		if (this->e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Tilde)
+		if (this->e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::F1)
 		{
 			player->showHitBox = !player->showHitBox;
-			player->showOrigin = !player->showOrigin;
 			for (auto& tile : *(map->tileMap)) {
 				tile->showHitBox = !tile->showHitBox;
+			}
+		}
+		if (this->e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::F2)
+		{
+			player->showOrigin = !player->showOrigin;
+			for (auto& tile : *(map->tileMap)) {
 				tile->showOrigin = !tile->showOrigin;
 			}
 		}
