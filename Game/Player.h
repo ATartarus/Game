@@ -1,17 +1,14 @@
 #pragma once
 #include "stdafx.h"
 #include "Animation.h"
-#include "SpriteHitBox.h"
+#include "Entity.h"
 #include "Collider.h"
 
-class Player
+class Player : public Entity
 {
 private:
 	//Model
 	sf::Texture texture;
-	SpriteHitBox* body;
-	const float hitBoxHeight = 42.0f;
-	const float hitBoxWidth = 25.0f;
 
 	//Animation
 	Player_State playerState;
@@ -33,18 +30,10 @@ public:
 	Player();
 	~Player();
 
-	bool showHitBox;
-	bool showOrigin;
-
-	//Accessors
-	void setPosition(float x, float y);
-	void setPosition(sf::Vector2f pos);
-	sf::Vector2f getPosition();
-
 	//Update
 	void update(float deltaTime);
 	void updateMovement(float deltaTime);
-	void updateCollision(SpriteHitBox& tile);
+	void updateCollision(Entity& tile);
 
 	//Render
 	void render(sf::RenderWindow& target);

@@ -1,10 +1,10 @@
 #pragma once
 #include "stdafx.h"
-#include "SpriteHitBox.h"
+#include "Entity.h"
 
 class Collider
 {
 public:
-	static sf::Vector2i Check(SpriteHitBox& player, SpriteHitBox& tile);
+	static sf::Vector2i Check(Entity& player, Entity& tile);
 };
 

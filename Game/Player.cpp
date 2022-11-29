@@ -3,24 +3,22 @@
 
 //Initialization
 
-Player::Player()
+Player::Player() : Entity(sf::IntRect(0, 0, 40, 50), sf::Vector2f(18.0f, 42.0f), texture, Origin_Pos::BOTTOM | Origin_Pos::CENTER)
 {
 	initVariables();
 	initTexture();
 	initSprite();
-	animation = new Animation(body);
+	animation = new Animation(this->sprite);
 }
 
 Player::~Player()
 {
-	delete body;
 	delete animation;
 }
 
 void Player::initVariables()
 {
-	playerState = IDLE;
-
+	playerState = Player_State::IDLE;
 	velocityMax = 160.0f;
 	acceleration = 10.0f;
 	deceleration = acceleration * 3;
@@ -28,8 +26,6 @@ void Player::initVariables()
 	velocity.x = 0.0f;
 	velocity.y = 0.0f;
 	allowJump = true;
-	showHitBox = false;
-	showOrigin = false;
 }
 
 void Player::initTexture()
@@ -42,26 +38,7 @@ void Player::initTexture()
 
 void Player::initSprite()
 {
-	body = new SpriteHitBox(sf::IntRect(0, 0, 40, 50), sf::Vector2f(hitBoxWidth, hitBoxHeight), BOTTOM | CENTER);
-	body->sprite.setTexture(texture);
-	body->setScale(2.0f, 2.0f);
-}
-
-//Accessors
-
-void Player::setPosition(float x, float y)
-{
-	body->setPosition(x, y);
-}
-
-void Player::setPosition(sf::Vector2f pos)
-{
-	setPosition(pos.x, pos.y);
-}
-
-sf::Vector2f Player::getPosition()
-{
-	return body->getPosition();
+	this->setScale(2.0f, 2.0f);
 }
 
 
@@ -69,28 +46,27 @@ sf::Vector2f Player::getPosition()
 
 void Player::update(float deltaTime)
 {
+	
 	updateMovement(deltaTime);
-	body->showHitBox = showHitBox;
-	body->showOrigin = showOrigin;
 }
 
 void Player::updateMovement(float deltaTime)
 {
 	playerState = Player_State::IDLE;
 
-	/// <Velocity.x calculations>
+	/*  <Velocity.x calculations>  */
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 	{
 		velocity.x -= acceleration;
 		playerState = Player_State::MOVING_LEFT;
-		animation->flip(false);
+		this->flip(false);
 	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 	{
 		velocity.x += acceleration;
 		playerState = Player_State::MOVING_RIGHT;
-		animation->flip(true);
+		this->flip(true);
 	}
 
 	if (fabs(velocity.x) > velocityMax)
@@ -100,11 +76,11 @@ void Player::updateMovement(float deltaTime)
 		if (fabs(velocity.x) < deceleration) velocity.x = 0;
 	}
 
-	/// </Velocity.x calculations>
+	/*  </Velocity.x calculations>  */
 
 
-	/// <Velocity.y calculations>
-	if (!sf::Keyboard::isKeyPressed(sf::Keyboard::W) && !sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && velocity.y == 0) allowJump = true;
+	/*  <Velocity.y calculations>  */
+ 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 	{
 		if (velocity.y == 0 && allowJump) {
@@ -113,24 +89,30 @@ void Player::updateMovement(float deltaTime)
 		}
 	}
 	
-	if (velocity.y < 0) 		playerState = JUMPING;
-	else if (velocity.y > 0)	playerState = FALLING;
+	if (velocity.y < 0) 		playerState = Player_State::JUMPING;
+	else if (velocity.y > 0)	playerState = Player_State::FALLING;
 	velocity.y += 981.0f * deltaTime;
 
 
-	/// </Velocity.y calculations>
+	/*  </Velocity.y calculations>  */
 
-	body->move(velocity * deltaTime);
+	this->move(velocity * deltaTime);
 
 	animation->setDeltaTime(deltaTime);
 	animation->animate(playerState);
 }
 
-void Player::updateCollision(SpriteHitBox& tile)
+void Player::updateCollision(Entity& tile)
 {
-	sf::Vector2i direction = Collider::Check(*(this->body), tile);
+	sf::Vector2i direction = Collider::Check(*this, tile);
 	if (direction.y != 0) {
-		velocity.y = 0;
+		if (direction.y == -1 && velocity.y > 0) {		//Hitting tile from top
+			velocity.y = 0;
+			allowJump = true;
+		}
+		else if (direction.y == 1 && velocity.y < 0) {	//Hitting tile from bottom
+			velocity.y = 0;
+		}
 	}
 }
 
@@ -139,6 +121,5 @@ void Player::updateCollision(SpriteHitBox& tile)
 
 void Player::render(sf::RenderWindow& target)
 {
-	target.draw(*body);
+	target.draw(*this);
 }
-

@@ -6,7 +6,8 @@
 #include <SFML/System.hpp>
 #include <iostream>
 
-enum Player_State
+
+enum class Player_State : uint32_t
 {
 	IDLE = 0,
 	MOVING_LEFT = 1,
@@ -15,11 +16,22 @@ enum Player_State
 	FALLING = (1 << 3),
 };
 
-enum Origin_Pos {
+enum class Origin_Pos : uint32_t
+{
 	DEFAULT = 0,
 	LEFT = 1,
-	RIGHT = 2,
-	TOP = 4,
-	CENTER = 8,
-	BOTTOM = 16,
+	RIGHT = (1 << 1),
+	TOP = (1 << 2),
+	CENTER = (1 << 3),
+	BOTTOM = (1 << 4),
 };
+
+inline bool operator==(const uint32_t& left, const Origin_Pos& right)
+{
+	return left == static_cast<uint32_t>(right);
+}
+
+inline Origin_Pos operator|(const Origin_Pos& left, const Origin_Pos& right)
+{
+	return static_cast<Origin_Pos>(static_cast<uint32_t>(left) | static_cast<uint32_t>(right));
+}

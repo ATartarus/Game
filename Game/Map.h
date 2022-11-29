@@ -1,7 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "Tinyxml2/tinyxml2.h"
-#include "SpriteHitBox.h"
+#include "Entity.h"
 
 class Map : public sf::Drawable
 {
@@ -17,7 +17,7 @@ public:
 	Map(const char* map);
 	~Map();
 
-	std::vector<SpriteHitBox*>* tileMap;
+	std::vector<Entity*>* tileMap;
 
 	void loadMap(const char* map);
 	void updateMap();

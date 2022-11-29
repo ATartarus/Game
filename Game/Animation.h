@@ -1,11 +1,9 @@
 #pragma once
 #include "stdafx.h"
-#include "SpriteHitBox.h"
 
 class Animation
 {
 private:
-	SpriteHitBox* entity;
 	sf::Sprite& sprite;
 	sf::IntRect frame;
 
@@ -24,10 +22,8 @@ private:
 	void initVariables();
 public:
 	Animation(sf::Sprite& sprite);
-	Animation(SpriteHitBox* entity);
 
 	void setDeltaTime(float delta);
 	void animate(Player_State state);
-	void flip(bool right);
 };
 

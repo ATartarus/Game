@@ -1,15 +1,15 @@
 #include "Collider.h"
 
-sf::Vector2i Collider::Check(SpriteHitBox& player, SpriteHitBox& tile)
+sf::Vector2i Collider::Check(Entity& player, Entity& tile)
 {
 	float deltaX = player.getPosition().x - tile.getPosition().x;	//if > 0 RIGHT SIDE
 	float deltaY = player.getPosition().y - tile.getPosition().y;	//if > 0 BOTTOM SIDE
-	float intersectionX = fabs(deltaX) - (tile.hitBox.getSize().x / 2 + player.getActualSize().x / 2);	//if < 0 INTERSECTION
-	float intersectionY = (deltaY > 0) ? fabs(deltaY) - (tile.hitBox.getSize().y / 2 + player.getActualSize().y) :
-										 fabs(deltaY) - tile.hitBox.getSize().y / 2;
+	float intersectionX = fabs(deltaX) - (tile.getActualBounds().x / 2 + player.getActualBounds().x / 2);	//if < 0 INTERSECTION
+	float intersectionY = (deltaY > 0) ? fabs(deltaY) - (tile.getActualBounds().y / 2 + player.getActualBounds().y) :
+										 fabs(deltaY) - tile.getActualBounds().y / 2;
 
 	sf::Vector2i direction(0, 0);
-	if (intersectionX < 0 && intersectionY < 0)
+	if (intersectionX < 0 && intersectionY < 0 && (fabs(intersectionX - intersectionY) > 1.0f))
 	{
 		if (intersectionX > intersectionY)
 		{
@@ -38,6 +38,7 @@ sf::Vector2i Collider::Check(SpriteHitBox& player, SpriteHitBox& tile)
 			}
 		}
 	}
+
 
 
 	return direction;
