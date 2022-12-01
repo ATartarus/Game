@@ -4,14 +4,18 @@ Entity::Entity(sf::IntRect spriteFrame, sf::Vector2f hitBox, sf::Texture& textur
 {
 	this->sprite.setTextureRect(spriteFrame);
 
-	if (position == (Origin_Pos::BOTTOM | Origin_Pos::CENTER)) {
+	switch (position)
+	{
+	case Origin_Pos::BOTTOM | Origin_Pos::CENTER:
 		this->sprite.setOrigin(spriteFrame.width / 2.0f, (float)spriteFrame.height);
 		this->hitBox.setOrigin(hitBox.x / 2.0f, hitBox.y);
-	}
-	else if (position == Origin_Pos::CENTER) {
+		break;
+	case Origin_Pos::CENTER:
 		this->sprite.setOrigin(spriteFrame.width / 2.0f, spriteFrame.height / 2.0f);
 		this->hitBox.setOrigin(hitBox.x / 2.0f, hitBox.y / 2.0f);
+		break;
 	}
+
 
 	
 	this->hitBox.setSize(hitBox);

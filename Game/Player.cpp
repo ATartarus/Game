@@ -4,7 +4,7 @@
 //Initialization
 
 Player::Player() : Entity(sf::IntRect(0, 0, 40, 50), 
-						  sf::Vector2f(18.0f, 42.0f),
+						  sf::Vector2f(15.0f, 42.0f),
 						  texture,
 						  Origin_Pos::BOTTOM | Origin_Pos::CENTER)
 {
@@ -109,11 +109,11 @@ void Player::updateCollision(Entity& tile)
 {
 	sf::Vector2i direction = Collider::Check(*this, tile);
 	if (direction.y != 0) {
-		if (direction.y == -1 && velocity.y > 0) {		//Hitting tile from top
+		if (direction.y == 1 && velocity.y > 0) {		//Hitting tile from top
 			velocity.y = 0;
 			allowJump = true;
 		}
-		else if (direction.y == 1 && velocity.y < 0) {	//Hitting tile from bottom
+		else if (direction.y == -1 && velocity.y < 0) {	//Hitting tile from bottom
 			velocity.y = 0;
 		}
 	}

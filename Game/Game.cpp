@@ -63,17 +63,13 @@ void Game::updatePollEvent()
 		}
 		if (this->e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::F1)
 		{
+			map->hitBoxesVisible = !map->hitBoxesVisible;
 			player->showHitBox = !player->showHitBox;
-			for (auto& tile : *(map->tileMap)) {
-				tile->showHitBox = !tile->showHitBox;
-			}
 		}
 		if (this->e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::F2)
 		{
+			map->originsVisible = !map->originsVisible;
 			player->showOrigin = !player->showOrigin;
-			for (auto& tile : *(map->tileMap)) {
-				tile->showOrigin = !tile->showOrigin;
-			}
 		}
 	}
 }
@@ -81,9 +77,21 @@ void Game::updatePollEvent()
 void Game::updatePlayer()
 {
 	this->player->update(deltaTime);
-	for (auto* tile : *(map->tileMap))
+	for (auto* tile : *(map->foregroundTiles))
 	{
 		player->updateCollision(*tile);
+	}
+
+	if ((player->getPosition().x >= map->exit->x1 && player->getPosition().x <= map->exit->x2) && 
+		(player->getPosition().y >= map->exit->y1 && player->getPosition().y <= map->exit->y2))
+	{
+		std::string nextMap = map->exit->nextMap;
+		delete map;
+		map = new Map(nextMap.c_str());
+		player->setPosition((player->getPosition().x > map->exit->x1) ? 
+							 map->exit->x2 + 5 :
+							 map->exit->x1 - 5,
+							 player->getPosition().y);
 	}
 }
 
