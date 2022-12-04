@@ -19,13 +19,15 @@ private:
 	sf::Vector2f acceleration;
 	float velocityMax;
 	float deceleration;
-	float jumpHeight;
-	bool allowJump;
+	struct Jump {
+		float height;
+		bool allow;
+		bool keyHold;
+	} jump;
 
 	//Initialization
 	void initVariables();
 	void initTexture();
-	void initSprite();
 public:
 	Player();
 	~Player();

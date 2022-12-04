@@ -10,7 +10,7 @@ sf::Vector2i Collider::Check(Entity& player, Entity& tile)
 
 	
 	sf::Vector2i direction(0, 0);
-	if (intersection.x < 0 && intersection.y < 0 && (fabs(intersection.x - intersection.y) > 0.5f))
+	if (intersection.x < 0 && intersection.y < 0 && (fabs(intersection.x - intersection.y) > tile.getActualBounds().y / 30.0f))
 	{
 		if (intersection.x > intersection.y)
 		{

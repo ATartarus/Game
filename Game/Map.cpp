@@ -4,12 +4,12 @@
 
 Map::Map(const char* map)
 {
-	foregroundTiles = nullptr;
-	backgroundTiles = nullptr;
-	objects			= nullptr;
-	hitBoxesVisible = false;
-	originsVisible  = false;
-	viewFollow		= false;
+	foregroundTiles  = nullptr;
+	backgroundLayers = nullptr;
+	objects		     = nullptr;
+	hitBoxesVisible  = false;
+	originsVisible   = false;
+	viewFollow		 = false;
 
 	loadMap(map);
 }
@@ -17,7 +17,7 @@ Map::Map(const char* map)
 Map::~Map()
 {
 	deleteForegroundTiles();
-	delete backgroundTiles;
+	deleteBackgroundLayers();
 	delete objects;
 	delete exit;
 }
@@ -25,6 +25,7 @@ Map::~Map()
 
 void Map::deleteForegroundTiles()
 {
+	if (foregroundTiles == nullptr) return;
 	for (auto& vec : *foregroundTiles)
 	{
 		for (auto t : vec) delete t;
@@ -32,9 +33,24 @@ void Map::deleteForegroundTiles()
 	delete foregroundTiles;
 }
 
+void Map::deleteBackgroundLayers()
+{
+	if (backgroundLayers == nullptr) return;
+	for (auto& layer : *backgroundLayers)
+	{
+		for (auto& vec : layer.matrix)
+		{
+			for (auto t : vec) delete t;
+		}
+	}
+	delete backgroundLayers;
+}
+
 
 /*  </Constructors/Destructors>  */
 
+
+/*#################################################################################################################################################*/
 
 
 /*  <Loader methods>  */
@@ -77,10 +93,10 @@ void Map::loadMap(const char* map)
 
 			tinyxml2::XMLElement* tileSet = tsxTileSet.FirstChildElement("tileset");
 			
-			tileSheet.size.x =     tileSet->FindAttribute("columns")->IntValue();
-			tileSheet.size.y =     tileSet->FindAttribute("tilecount")->IntValue() / tileSheet.size.x;
-			tileSheet.tile.x =     tileSet->FindAttribute("tilewidth")->IntValue();
-			tileSheet.tile.y =     tileSet->FindAttribute("tileheight")->IntValue();
+			tileSheet.size.x    =  tileSet->FindAttribute("columns")->IntValue();
+			tileSheet.size.y    =  tileSet->FindAttribute("tilecount")->IntValue() / tileSheet.size.x;
+			tileSheet.tile.x    =  tileSet->FindAttribute("tilewidth")->IntValue();
+			tileSheet.tile.y    =  tileSet->FindAttribute("tileheight")->IntValue();
 			tileSheet.spacing.x = (tileSet->Attribute("spacing")) ? tileSet->FindAttribute("spacing")->IntValue() : 0;
 			tileSheet.spacing.y = (tileSet->Attribute("margin")) ? tileSet->FindAttribute("margin")->IntValue() : 0;
 
@@ -92,13 +108,20 @@ void Map::loadMap(const char* map)
 		}
 		else if (layerName == "imagelayer")
 		{
-			background.repeatX = layer->Attribute("repeatx");
-			background.repeatY = layer->Attribute("repeaty");
+			backgroundImage.repeatX = layer->Attribute("repeatx");
+			backgroundImage.repeatY = layer->Attribute("repeaty");
+			backgroundImage.parallax.x = (layer->Attribute("parallaxx")) ? layer->FindAttribute("parallaxx")->FloatValue() : 1;
+			backgroundImage.parallax.y = (layer->Attribute("parallaxy")) ? layer->FindAttribute("parallaxy")->FloatValue() : 1;
 
 			PATH = folder + layer->FirstChildElement("image")->Attribute("source");
-			if (!background.texture.loadFromFile(PATH)){
+			if (!backgroundImage.texture.loadFromFile(PATH)){
 				std::cout << "MAP::loadMap could not load background image" << "\n";
 			}
+
+			backgroundImage.sprite.setTexture(backgroundImage.texture, true);
+			float scale = (findProperty(layer, "scale")) ? findProperty(layer, "scale")->FindAttribute("value")->FloatValue() : 1;
+			backgroundImage.localScale = sf::Vector2f(scale, scale);
+			backgroundImage.sprite.setScale(scale, scale);
 		}
 		else if (layerName == "objectgroup")
 		{
@@ -116,13 +139,16 @@ void Map::loadMap(const char* map)
 
 			if (layer->Attribute("class") && static_cast<std::string>(layer->Attribute("class")) == "background")
 			{
-				delete backgroundTiles;
-				backgroundTiles = new std::vector<sf::Sprite>;
+				if (backgroundLayers == nullptr) backgroundLayers = new std::vector<BackgroundLayer>;
+				backgroundLayers->push_back(BackgroundLayer());
+				parseColor(backgroundLayers->back().tintColor, layer->Attribute("tintcolor"));
+				backgroundLayers->back().matrix.resize(layer->FindAttribute("height")->IntValue());
+				for (auto& vec : backgroundLayers->back().matrix) vec = std::vector<sf::Sprite*>(layer->FindAttribute("width")->IntValue());
 				loadTiles(csv, true);
 			}
 			else
 			{
-				delete foregroundTiles;
+				deleteForegroundTiles();
 				foregroundTiles = new std::vector<std::vector<Entity*>>(layer->FindAttribute("height")->IntValue());
 				for (auto& vec : *foregroundTiles) vec = std::vector<Entity*>(layer->FindAttribute("width")->IntValue());
 				m_actualBounds = sf::Vector2f((*foregroundTiles)[0].size() * tileSheet.tile.x, foregroundTiles->size() * tileSheet.tile.y);
@@ -166,9 +192,10 @@ void Map::loadTiles(std::string& csv, bool background)
 
 			if (background)
 			{
-				sf::Sprite tmp = sf::Sprite(tileSheet.texture, sf::IntRect(spos, tileSheet.tile));
-				tmp.setPosition(wpos);
-				backgroundTiles->push_back(tmp);
+				sf::Sprite* tmp = new sf::Sprite(tileSheet.texture, sf::IntRect(spos, tileSheet.tile));
+				tmp->setPosition(wpos);
+				if (backgroundLayers->back().tintColor != sf::Color()) tmp->setColor(backgroundLayers->back().tintColor);
+				backgroundLayers->back().matrix[i][j] = tmp;
 			}
 			else
 			{
@@ -232,10 +259,15 @@ void Map::loadObject(tinyxml2::XMLElement* object)
 /*  </Loader methods>  */
 
 
+/*#################################################################################################################################################*/
+
+
+/*  <Supplemental XML loader methods>  */
+
 tinyxml2::XMLElement* Map::findProperty(tinyxml2::XMLElement* element, std::string property)
 {
 	if (!element->FirstChildElement("properties")) {
-		std::cout << "MAP::findProperty could not find properties" << "\n";
+		std::cout << "MAP::findProperty could not find properties in " << element->Name() << "\n";
 		return nullptr;
 	}
 
@@ -249,22 +281,55 @@ tinyxml2::XMLElement* Map::findProperty(tinyxml2::XMLElement* element, std::stri
 	return nullptr;
 }
 
+bool Map::parseColor(sf::Color& destination, const char* color)
+{
+	if (color == NULL) {
+		std::cout << "MAP::parseColor color is empty" << "\n";
+		return false;
+	}
+	sf::Uint8 r = 16 * ((color[1] > 57) ? color[1] - 87 : color[1] - 48);
+	r += (color[2] > 57) ? color[2] - 87 : color[2] - 48;
+	sf::Uint8 g = 16 * ((color[3] > 57) ? color[3] - 87 : color[3] - 48);
+	g += (color[4] > 57) ? color[4] - 87 : color[4] - 48;
+	sf::Uint8 b = 16 * ((color[5] > 57) ? color[5] - 87 : color[5] - 48);
+	b += (color[6] > 57) ? color[6] - 87 : color[6] - 48;
+	destination = sf::Color(r, g, b);
+	return true;
+}
 
-sf::Vector2f Map::getActualTileSize()
+/*  </Supplemental XML loader methods>  */
+
+
+/*#################################################################################################################################################*/
+
+
+/*  <Accessors>  */
+
+sf::Vector2f Map::getActualTileSize() const
 {
 	return (*foregroundTiles)[0][0]->getActualBounds();
 }
 
-sf::Vector2f Map::getActualBounds()
+sf::Vector2f Map::getActualBounds() const
 {
 	return m_actualBounds;
 }
+
+/*  </Accessors>  */
+
+
+/*#################################################################################################################################################*/
+
 
 /*  <Render>  */
 
 void Map::setResolutionScale(sf::Vector2f scale)
 {
-	sf::Vector2f prevScale = (*foregroundTiles)[0][0]->getScale();
+	sf::Vector2f prevScale(0.0f, 0.0f);
+	while (!prevScale.x) {
+		if ((*foregroundTiles)[0][0] == nullptr) continue;
+		prevScale = (*foregroundTiles)[0][0]->getScale();
+	}
 	sf::Vector2f prodCoeff = sf::Vector2f(scale.x / prevScale.x, scale.y / prevScale.y);
 	m_actualBounds.x *= prodCoeff.x;
 	m_actualBounds.y *= prodCoeff.y;
@@ -279,16 +344,20 @@ void Map::setResolutionScale(sf::Vector2f scale)
 		}
 	}
 
-	if (backgroundTiles)
-	{
-		prevScale = (*backgroundTiles)[0].getScale();
-		for (auto& t : *backgroundTiles)
-		{
-			t.setPosition(t.getPosition().x * prodCoeff.x, t.getPosition().y * prodCoeff.y);
-			t.setScale(scale.x, scale.y);
+	if (backgroundLayers) {
+		for (auto& layer : *backgroundLayers) {
+			for (auto& vec : layer.matrix) {
+				for (auto t : vec) {
+					if (t == nullptr) continue;
+					t->setPosition(t->getPosition().x * prodCoeff.x, t->getPosition().y * prodCoeff.y);
+					t->setScale(scale.x, scale.y);
+				}
+			}
 		}
 	}
 
+	backgroundImage.sprite.setScale(backgroundImage.localScale.x * scale.x, backgroundImage.localScale.y * scale.y);
+	backgroundImage.sprite.setPosition(backgroundImage.sprite.getPosition().x * prodCoeff.x, backgroundImage.sprite.getPosition().y * prodCoeff.y);
 
 	exit->rect.left = exit->rect.left * prodCoeff.x;
 	exit->rect.top = exit->rect.top * prodCoeff.y;
@@ -296,15 +365,16 @@ void Map::setResolutionScale(sf::Vector2f scale)
 	exit->rect.height = exit->rect.height * prodCoeff.y;
 }
 
+
 void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	sf::Sprite back(background.texture);
+	sf::Sprite backCpy = backgroundImage.sprite;
+	backCpy.setScale(backgroundImage.sprite.getScale());
 	do
 	{
-		target.draw(back);
-		back.move(back.getLocalBounds().width, 0.0f);
-	} while (background.repeatX && back.getPosition().x < target.getSize().x);
-
+		target.draw(backCpy);
+		backCpy.move(backCpy.getGlobalBounds().width, 0.0f);
+	} while (backgroundImage.repeatX && backCpy.getPosition().x < target.getView().getCenter().x + target.getSize().x / 2.0f);
 
 	if (objects != nullptr) {
 		for (auto& obj : *objects) {
@@ -312,21 +382,39 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 		}
 	}
 
-	if (backgroundTiles != nullptr)
-	{
-		for (auto& t : *backgroundTiles) {
-			target.draw(t);
+	
+	int Y1 = static_cast<int>((target.getView().getCenter().y - target.getView().getSize().y / 2.0f) / getActualTileSize().y);
+	int Y2 = static_cast<int>(Y1 + target.getSize().y / getActualTileSize().y + 1);
+	int X1 = static_cast<int>((target.getView().getCenter().x - target.getView().getSize().x / 2.0f) / getActualTileSize().x);
+	int X2 = static_cast<int>(X1 + target.getSize().x / getActualTileSize().x + 1);
+
+	if (Y1 < 0) Y1 = 0;
+	if (Y2 > foregroundTiles->size()) Y2 = static_cast<int>(foregroundTiles->size());
+	if (X1 < 0) X1 = 0;
+	if (X2 > (*foregroundTiles)[0].size()) X2 = static_cast<int>((*foregroundTiles)[0].size());
+
+	if (backgroundLayers) {
+		for (auto& layer : *backgroundLayers) {
+			for (int i = Y1; i < Y2; i++) {
+				for (int j = X1; j < X2; j++) {
+					if (layer.matrix[i][j])
+					{
+						target.draw(*layer.matrix[i][j]);
+					}
+				}
+			}
 		}
 	}
 
-	for (auto& vec : *foregroundTiles)
-	{
-		for (auto t : vec)
-		{
-			if (t == nullptr) continue;
-			t->showHitBox = hitBoxesVisible;
-			t->showOrigin = originsVisible;
-			target.draw(*t);
+
+	for (int i = Y1; i < Y2; i++) {
+		for (int j = X1; j < X2; j++) {
+			if ((*foregroundTiles)[i][j])
+			{
+				(*foregroundTiles)[i][j]->showHitBox = hitBoxesVisible;
+				(*foregroundTiles)[i][j]->showOrigin = originsVisible;
+				target.draw(*(*foregroundTiles)[i][j]);
+			}
 		}
 	}
 
