@@ -18,11 +18,7 @@ private:
 
 
 	Console* console;
-
-	//Map
 	Map* map;
-
-	//Player
 	Player* player;
 
 	void updatePollEvent();

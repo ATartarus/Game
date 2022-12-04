@@ -6,11 +6,22 @@
 class Map : public sf::Drawable
 {
 private:
-	struct Background {
+	sf::Vector2f m_actualBounds;
+	std::vector<sf::Sprite>* objects;
+private:
+	struct Image {
 		sf::Texture texture;
+		sf::Sprite sprite;
+		sf::Vector2f localScale;
+		sf::Vector2f parallax;
 		bool repeatX = false;
 		bool repeatY = false;
-	} background;
+	} backgroundImage;
+
+	struct Tiles {
+		std::vector<std::vector<sf::Sprite*>>* matrix{};
+		sf::Color tintColor;
+	} backgroundTiles;
 
 	struct TileSheet {
 		sf::Texture texture;
@@ -28,15 +39,16 @@ private:
 			rect(x, y, width, height), nextMap(nextMap) {};
 	};
 
-	std::vector<sf::Sprite>* backgroundTiles;
-	std::vector<sf::Sprite>* objects;
-	sf::Vector2f m_actualBounds;
+
 
 	void loadMap(const char* map);
 	void loadTiles(std::string& csv, bool background);
 	void loadObject(tinyxml2::XMLElement* object);
 	void deleteForegroundTiles();
+	void deleteBackgroundTiles();
 	tinyxml2::XMLElement* findProperty(tinyxml2::XMLElement* element, std::string property);
+	bool parseColor(sf::Color& destination, const char* color);
+
 public:
 	Map(const char* map);
 	~Map();
@@ -47,8 +59,9 @@ public:
 	bool originsVisible;
 	bool viewFollow;
 
-	sf::Vector2f getActualTileSize();
-	sf::Vector2f getActualBounds();
+
+	sf::Vector2f getActualTileSize() const;
+	sf::Vector2f getActualBounds() const;
 	void setResolutionScale(sf::Vector2f scale);
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };

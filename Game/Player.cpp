@@ -10,7 +10,7 @@ Player::Player() : Entity(sf::IntRect(0, 0, 40, 50),
 {
 	initVariables();
 	initTexture();
-	initSprite();
+	this->setScale(2.0f, 2.0f);
 	animation = new Animation(this->sprite);
 }
 
@@ -21,14 +21,15 @@ Player::~Player()
 
 void Player::initVariables()
 {
-	playerState = Player_State::IDLE;
-	velocityMax = 160.0f;
+	playerState  = Player_State::IDLE;
+	velocityMax  = 160.0f;
 	acceleration = sf::Vector2f(10.0f, 981.0f);
 	deceleration = acceleration.x * 3;
-	jumpHeight = 100.0f;
-	velocity.x = 0.0f;
-	velocity.y = 0.0f;
-	allowJump = true;
+	velocity.x   = 0.0f;
+	velocity.y   = 0.0f;
+	jump.height  = 100.f;
+	jump.allow   = true;
+	jump.keyHold = false;
 }
 
 void Player::initTexture()
@@ -38,12 +39,6 @@ void Player::initTexture()
 		std::cout << "PLAYER::Could not load texture" << "\n";
 	}
 }
-
-void Player::initSprite()
-{
-	this->setScale(2.0f, 2.0f);
-}
-
 
 //Update
 
@@ -83,12 +78,16 @@ void Player::updateMovement(float deltaTime)
 
 
 	/*  <Velocity.y calculations>  */
- 
+
+	if (!sf::Keyboard::isKeyPressed(sf::Keyboard::W) && !sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && (velocity.y >= 0.0f && velocity.y < 5.0f)) {
+		jump.keyHold = false;
+	}
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 	{
-		if (velocity.y == 0 && allowJump) {
-			velocity.y = -sqrtf(2.0f * acceleration.y * jumpHeight);
-			allowJump = false;
+		if (velocity.y < 0) jump.keyHold = true;
+		if (velocity.y == 0 && jump.allow) {
+			velocity.y = -sqrtf(2.0f * acceleration.y * jump.height);
+			jump.allow = false;
 		}
 	}
 	
@@ -111,7 +110,7 @@ void Player::updateCollision(Entity& tile)
 	if (direction.y != 0) {
 		if (direction.y == 1 && velocity.y > 0) {		//Hitting tile from top
 			velocity.y = 0;
-			allowJump = true;
+			if (!jump.keyHold) jump.allow = true;
 		}
 		else if (direction.y == -1 && velocity.y < 0) {	//Hitting tile from bottom
 			velocity.y = 0;
@@ -130,12 +129,11 @@ std::string Player::getFrameLog()
 void Player::setResolutionScale(sf::Vector2f scale)
 {
 	sf::Vector2f prodCoeff = sf::Vector2f(scale.x / fabs(m_scale.x), scale.y / fabs(m_scale.y));
-	this->setScale(scale.x, scale.y);
+	this->setScale((m_scale.x > 0) ? scale.x : -scale.x, scale.y);
 	this->setPosition(this->getPosition().x * prodCoeff.x, this->getPosition().y * prodCoeff.y);
 	velocity.y *= prodCoeff.y;
 	velocityMax *= prodCoeff.x;
 	acceleration *= prodCoeff.x;
 	deceleration *= prodCoeff.x;
-	jumpHeight *= prodCoeff.y;
-	
+	jump.height *= prodCoeff.y;
 }

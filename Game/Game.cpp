@@ -44,19 +44,11 @@ void Game::setDeltaTime(float deltaTime)
 
 void Game::update()
 {
-	//std::cout << this->deltaTime << "\n";
-
-	//int sum = 0;
-	//for (int i = 0; i < 100000000; i++) {
-	//	sum += i;
-	//}
 	console->clearOutput();
 
 	updatePollEvent();
 
 	updatePlayer();
-
-	if (map->viewFollow) updateView();
 
 
 	if (map->exit != nullptr &&
@@ -65,6 +57,8 @@ void Game::update()
 	{
 		changeMap();
 	}
+
+	if (map->viewFollow) updateView();
 
 	if (console->isEnabled) updateConsole();
 }
@@ -105,9 +99,11 @@ void Game::updatePlayer()
 	int Y1 = static_cast<int>((player->getPosition().y - player->getActualBounds().y) / map->getActualTileSize().y);
 	int Y2 = static_cast<int>(player->getPosition().y / map->getActualTileSize().y + 1);
 	int X1 = static_cast<int>((player->getPosition().x - player->getActualBounds().x / 2.0f) / map->getActualTileSize().x);
-	int X2 = static_cast<int>((player->getPosition().x + player->getActualBounds().x / 2.0f) / map->getActualTileSize().x + 1);
+	int X2 = static_cast<int>(X1 + player->getActualBounds().x / map->getActualTileSize().x + 1);
 
+	if (Y1 < 0) Y1 = 0;
 	if (Y2 > map->foregroundTiles->size()) Y2 = static_cast<int>(map->foregroundTiles->size());
+	if (X1 < 0) X1 = 0;
 	if (X2 > (*map->foregroundTiles)[0].size()) X2 = static_cast<int>((*map->foregroundTiles)[0].size());
 
 	for (int i = Y1; i < Y2; i++) {
@@ -120,17 +116,21 @@ void Game::updatePlayer()
 
 void Game::updateView()
 {
+	sf::Vector2f shift(0.0f, 0.0f);
+
 	if (player->getPosition().x + window.getSize().x / 2.0f < map->getActualBounds().x &&
 		player->getPosition().x - window.getSize().x / 2.0f > 0.0f)
 	{
-		window.setView(sf::View(sf::Vector2f(player->getPosition().x, window.getView().getCenter().y), sf::Vector2f(window.getSize())));
+		shift.x = player->getPosition().x - window.getView().getCenter().x;
 	}
 
 	if (player->getPosition().y + window.getSize().y / 2.0f < map->getActualBounds().y &&
 		player->getPosition().y - window.getSize().y / 2.0f > 0.0f)
 	{
-		window.setView(sf::View(sf::Vector2f(window.getView().getCenter().x, player->getPosition().y), sf::Vector2f(window.getSize())));
+		shift.y = player->getPosition().y - window.getView().getCenter().y;
 	}
+
+	window.setView(sf::View(sf::Vector2f(shift.x + window.getView().getCenter().x, shift.y + window.getView().getCenter().y), sf::Vector2f(window.getSize())));
 }
 
 void Game::updateConsole()
@@ -160,7 +160,7 @@ void Game::changeMap()
 void Game::focusView()
 {
 	sf::View view(player->getPosition(), sf::Vector2f(window.getSize()));
-	sf::Vector2f center;
+	sf::Vector2f center = player->getPosition();
 	sf::Vector2f halfWindow(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
 	if (player->getPosition().x < halfWindow.x) center.x = halfWindow.x;
 	else if (player->getPosition().x > map->getActualBounds().x - halfWindow.x) center.x = map->getActualBounds().x - halfWindow.x;
