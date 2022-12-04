@@ -23,8 +23,8 @@ void Player::initVariables()
 {
 	playerState = Player_State::IDLE;
 	velocityMax = 160.0f;
-	acceleration = 10.0f;
-	deceleration = acceleration * 3;
+	acceleration = sf::Vector2f(10.0f, 981.0f);
+	deceleration = acceleration.x * 3;
 	jumpHeight = 100.0f;
 	velocity.x = 0.0f;
 	velocity.y = 0.0f;
@@ -33,7 +33,7 @@ void Player::initVariables()
 
 void Player::initTexture()
 {
-	if (!texture.loadFromFile("Texture/player_sheet.png"))
+	if (!texture.loadFromFile("Texture\\player_sheet.png"))
 	{
 		std::cout << "PLAYER::Could not load texture" << "\n";
 	}
@@ -61,13 +61,13 @@ void Player::updateMovement(float deltaTime)
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 	{
-		velocity.x -= acceleration;
+		velocity.x -= acceleration.x;
 		playerState = Player_State::MOVING_LEFT;
 		this->flip(false);
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 	{
-		velocity.x += acceleration;
+		velocity.x += acceleration.x;
 		playerState = Player_State::MOVING_RIGHT;
 		this->flip(true);
 	}
@@ -87,14 +87,14 @@ void Player::updateMovement(float deltaTime)
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
 	{
 		if (velocity.y == 0 && allowJump) {
-			velocity.y = -sqrtf(2.0f * 981.0f * jumpHeight);
+			velocity.y = -sqrtf(2.0f * acceleration.y * jumpHeight);
 			allowJump = false;
 		}
 	}
 	
 	if (velocity.y < 0) 		playerState = Player_State::JUMPING;
 	else if (velocity.y > 0)	playerState = Player_State::FALLING;
-	velocity.y += 981.0f * deltaTime;
+	velocity.y += acceleration.y * deltaTime;
 
 
 	/*  </Velocity.y calculations>  */
@@ -119,10 +119,23 @@ void Player::updateCollision(Entity& tile)
 	}
 }
 
-
-//Render
-
-void Player::render(sf::RenderWindow& target)
+std::string Player::getFrameLog()
 {
-	target.draw(*this);
+	std::string str = "Position:\nX: " + std::to_string(m_position.x) + "\nY: " + std::to_string(m_position.y) + "\n";
+	str += "Velocity:\nX: " + std::to_string(velocity.x) + "\nY: " + std::to_string(velocity.y) + "\n";
+	return str;
+}
+
+
+void Player::setResolutionScale(sf::Vector2f scale)
+{
+	sf::Vector2f prodCoeff = sf::Vector2f(scale.x / fabs(m_scale.x), scale.y / fabs(m_scale.y));
+	this->setScale(scale.x, scale.y);
+	this->setPosition(this->getPosition().x * prodCoeff.x, this->getPosition().y * prodCoeff.y);
+	velocity.y *= prodCoeff.y;
+	velocityMax *= prodCoeff.x;
+	acceleration *= prodCoeff.x;
+	deceleration *= prodCoeff.x;
+	jumpHeight *= prodCoeff.y;
+	
 }

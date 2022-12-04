@@ -6,9 +6,10 @@ Map::Map(const char* map)
 {
 	foregroundTiles = nullptr;
 	backgroundTiles = nullptr;
-	objects =		  nullptr;
+	objects			= nullptr;
 	hitBoxesVisible = false;
-	originsVisible =  false;
+	originsVisible  = false;
+	viewFollow		= false;
 
 	loadMap(map);
 }
@@ -16,31 +17,21 @@ Map::Map(const char* map)
 Map::~Map()
 {
 	deleteForegroundTiles();
-	deleteBackgroundTiles();
-	deleteObjects();
+	delete backgroundTiles;
+	delete objects;
+	delete exit;
 }
 
 
 void Map::deleteForegroundTiles()
 {
-	if (foregroundTiles == nullptr) return;
-	for (auto it : *foregroundTiles) delete it;
+	for (auto& vec : *foregroundTiles)
+	{
+		for (auto t : vec) delete t;
+	}
 	delete foregroundTiles;
 }
 
-void Map::deleteBackgroundTiles()
-{
-	if (backgroundTiles == nullptr) return;
-	for (auto it : *backgroundTiles) delete it;
-	delete backgroundTiles;
-}
-
-void Map::deleteObjects()
-{
-	if (objects == nullptr) return;
-	for (auto it : *objects) delete it;
-	delete objects;
-}
 
 /*  </Constructors/Destructors>  */
 
@@ -60,8 +51,13 @@ void Map::loadMap(const char* map)
 		return;
 	}
 
+	tinyxml2::XMLElement* layer = tmxMap.FirstChildElement("map");
+	if (findProperty(layer, "viewFollow"))
+	{
+		viewFollow = findProperty(layer, "viewFollow")->FindAttribute("value")->BoolValue();
+	}
 
-	tinyxml2::XMLElement* layer = tmxMap.FirstChildElement("map")->FirstChildElement();
+	layer = layer->FirstChildElement("tileset");
 	while (layer)
 	{
 		std::string layerName = layer->Name();
@@ -106,8 +102,8 @@ void Map::loadMap(const char* map)
 		}
 		else if (layerName == "objectgroup")
 		{
-			deleteObjects();
-			objects = new std::vector<sf::Sprite*>;
+			delete objects;
+			objects = new std::vector<sf::Sprite>;
 			tinyxml2::XMLElement* object = layer->FirstChildElement();
 			do {
 				loadObject(object);
@@ -119,8 +115,19 @@ void Map::loadMap(const char* map)
 			std::string csv = layer->FirstChildElement("data")->FirstChild()->ToText()->Value();
 
 			if (layer->Attribute("class") && static_cast<std::string>(layer->Attribute("class")) == "background")
+			{
+				delete backgroundTiles;
+				backgroundTiles = new std::vector<sf::Sprite>;
 				loadTiles(csv, true);
-			else loadTiles(csv, false);
+			}
+			else
+			{
+				delete foregroundTiles;
+				foregroundTiles = new std::vector<std::vector<Entity*>>(layer->FindAttribute("height")->IntValue());
+				for (auto& vec : *foregroundTiles) vec = std::vector<Entity*>(layer->FindAttribute("width")->IntValue());
+				m_actualBounds = sf::Vector2f((*foregroundTiles)[0].size() * tileSheet.tile.x, foregroundTiles->size() * tileSheet.tile.y);
+				loadTiles(csv, false);
+			}
 		}
 		layer = layer->NextSiblingElement();
 	}
@@ -129,15 +136,6 @@ void Map::loadMap(const char* map)
 
 void Map::loadTiles(std::string& csv, bool background)
 {
-	if (background) {
-		deleteBackgroundTiles();
-		backgroundTiles = new std::vector<sf::Sprite*>;
-	}
-	else {
-		deleteForegroundTiles();
-		foregroundTiles = new std::vector<Entity*>;
-	}
-
 	std::vector<std::vector<int>> csvMap;
 	std::vector<int> tmp;
 	std::string tmps;
@@ -168,8 +166,8 @@ void Map::loadTiles(std::string& csv, bool background)
 
 			if (background)
 			{
-				sf::Sprite* tmp = new sf::Sprite(tileSheet.texture, sf::IntRect(spos, tileSheet.tile));
-				tmp->setPosition(wpos);
+				sf::Sprite tmp = sf::Sprite(tileSheet.texture, sf::IntRect(spos, tileSheet.tile));
+				tmp.setPosition(wpos);
 				backgroundTiles->push_back(tmp);
 			}
 			else
@@ -178,8 +176,8 @@ void Map::loadTiles(std::string& csv, bool background)
 										 sf::Vector2f(tileSheet.tile.x, tileSheet.tile.y),
 										 tileSheet.texture,
 										 Origin_Pos::CENTER);
-				tmp->setPosition(wpos.x + tileSheet.tile.x / 2, wpos.y + tileSheet.tile.y / 2);
-				foregroundTiles->push_back(tmp);
+				tmp->setPosition(wpos.x + tileSheet.tile.x / 2.0f, wpos.y + tileSheet.tile.y / 2.0f);
+				(*foregroundTiles)[i][j] = tmp;
 			}
 		}
 	}
@@ -191,14 +189,15 @@ void Map::loadObject(tinyxml2::XMLElement* object)
 	if (object->Attribute("class") && static_cast<std::string>(object->Attribute("class")) == "exit")
 	{
 		exit = new Exit(object->FindAttribute("x")->IntValue(),
-						object->FindAttribute("x")->IntValue() + object->FindAttribute("width")->IntValue(),
 						object->FindAttribute("y")->IntValue(),
-						object->FindAttribute("y")->IntValue() + object->FindAttribute("height")->IntValue(),
+						object->FindAttribute("width")->FloatValue(),
+						object->FindAttribute("height")->FloatValue(),
 						findProperty(object, "destination")->Attribute("value"));
+
 		return;
 	}
 
-	sf::Sprite* tmp = new sf::Sprite();
+	sf::Sprite tmp = sf::Sprite();
 	sf::Vector2f wpos = sf::Vector2f(object->FindAttribute("x")->FloatValue(),
 									 object->FindAttribute("y")->FloatValue());
 	sf::Vector2i spos = sf::Vector2i(0, 0);
@@ -217,16 +216,16 @@ void Map::loadObject(tinyxml2::XMLElement* object)
 	if (GID != -1) {
 		spos = sf::Vector2i((GID % tileSheet.size.x - 1) * (tileSheet.tile.x + tileSheet.spacing.x) + tileSheet.spacing.x,
 			                 GID / tileSheet.size.x * (tileSheet.tile.y + tileSheet.spacing.y) + tileSheet.spacing.y);
-		tmp->setTexture(tileSheet.texture);
+		tmp.setTexture(tileSheet.texture);
 	}
-	else tmp->setTexture(sf::Texture());
+	else tmp.setTexture(sf::Texture());
 
 	
 
-	tmp->setTextureRect(sf::IntRect(spos, tileSheet.tile));
-	tmp->setScale(object->FindAttribute("width")->FloatValue() / tileSheet.tile.x,
-		          object->FindAttribute("height")->FloatValue() / tileSheet.tile.y);
-	tmp->setPosition(wpos);
+	tmp.setTextureRect(sf::IntRect(spos, tileSheet.tile));
+	tmp.setScale(object->FindAttribute("width")->FloatValue() / tileSheet.tile.x,
+		         object->FindAttribute("height")->FloatValue() / tileSheet.tile.y);
+	tmp.setPosition(wpos);
 	objects->push_back(tmp);
 }
 
@@ -251,6 +250,52 @@ tinyxml2::XMLElement* Map::findProperty(tinyxml2::XMLElement* element, std::stri
 }
 
 
+sf::Vector2f Map::getActualTileSize()
+{
+	return (*foregroundTiles)[0][0]->getActualBounds();
+}
+
+sf::Vector2f Map::getActualBounds()
+{
+	return m_actualBounds;
+}
+
+/*  <Render>  */
+
+void Map::setResolutionScale(sf::Vector2f scale)
+{
+	sf::Vector2f prevScale = (*foregroundTiles)[0][0]->getScale();
+	sf::Vector2f prodCoeff = sf::Vector2f(scale.x / prevScale.x, scale.y / prevScale.y);
+	m_actualBounds.x *= prodCoeff.x;
+	m_actualBounds.y *= prodCoeff.y;
+
+	for (auto& vec : *foregroundTiles)
+	{
+		for (auto t : vec)
+		{
+			if (t == nullptr) continue;
+			t->setPosition(t->getPosition().x * prodCoeff.x, t->getPosition().y * prodCoeff.y);
+			t->setScale(scale.x, scale.y);
+		}
+	}
+
+	if (backgroundTiles)
+	{
+		prevScale = (*backgroundTiles)[0].getScale();
+		for (auto& t : *backgroundTiles)
+		{
+			t.setPosition(t.getPosition().x * prodCoeff.x, t.getPosition().y * prodCoeff.y);
+			t.setScale(scale.x, scale.y);
+		}
+	}
+
+
+	exit->rect.left = exit->rect.left * prodCoeff.x;
+	exit->rect.top = exit->rect.top * prodCoeff.y;
+	exit->rect.width = exit->rect.width * prodCoeff.x;
+	exit->rect.height = exit->rect.height * prodCoeff.y;
+}
+
 void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	sf::Sprite back(background.texture);
@@ -260,25 +305,41 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 		back.move(back.getLocalBounds().width, 0.0f);
 	} while (background.repeatX && back.getPosition().x < target.getSize().x);
 
+
 	if (objects != nullptr) {
-		for (auto obj : *objects) {
-			target.draw(*obj);
+		for (auto& obj : *objects) {
+			target.draw(obj);
 		}
 	}
 
-
 	if (backgroundTiles != nullptr)
 	{
-		for (auto t : *backgroundTiles) {
+		for (auto& t : *backgroundTiles) {
+			target.draw(t);
+		}
+	}
+
+	for (auto& vec : *foregroundTiles)
+	{
+		for (auto t : vec)
+		{
+			if (t == nullptr) continue;
+			t->showHitBox = hitBoxesVisible;
+			t->showOrigin = originsVisible;
 			target.draw(*t);
 		}
 	}
 
 
-
-	for (auto t : *foregroundTiles) {
-		t->showHitBox = hitBoxesVisible;
-		t->showOrigin = originsVisible;
-		target.draw(*t);
+	if (hitBoxesVisible)
+	{
+		sf::RectangleShape tmp(exit->rect.getSize());
+		tmp.setPosition(exit->rect.getPosition());
+		tmp.setFillColor(sf::Color::Transparent);
+		tmp.setOutlineColor(sf::Color::Green);
+		tmp.setOutlineThickness(1.0f);
+		target.draw(tmp);
 	}
 }
+
+/*  </Render>  */

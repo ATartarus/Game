@@ -16,8 +16,8 @@ private:
 
 	//Physics
 	sf::Vector2f velocity;
+	sf::Vector2f acceleration;
 	float velocityMax;
-	float acceleration;
 	float deceleration;
 	float jumpHeight;
 	bool allowJump;
@@ -34,8 +34,8 @@ public:
 	void update(float deltaTime);
 	void updateMovement(float deltaTime);
 	void updateCollision(Entity& tile);
+	std::string getFrameLog();
 
-	//Render
-	void render(sf::RenderWindow& target);
+	void setResolutionScale(sf::Vector2f scale);
 };
 

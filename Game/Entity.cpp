@@ -21,7 +21,7 @@ Entity::Entity(sf::IntRect spriteFrame, sf::Vector2f hitBox, sf::Texture& textur
 	this->hitBox.setSize(hitBox);
 	this->hitBox.setFillColor(sf::Color::Transparent);
 	this->hitBox.setOutlineColor(sf::Color::Red);
-	this->hitBox.setOutlineThickness(1);
+	this->hitBox.setOutlineThickness(1.0f);
 
 	this->showHitBox = false;
 	this->showOrigin = false;
@@ -65,6 +65,11 @@ void Entity::setScale(float x, float y)
 	m_scale = sf::Vector2f(x, y);
 	sprite.setScale(x, y);
 	hitBox.setScale(x, y);
+}
+
+void Entity::setScale(sf::Vector2f scale)
+{
+	setScale(scale.x, scale.y);
 }
 
 void Entity::setPosition(float x, float y)

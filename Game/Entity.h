@@ -18,6 +18,7 @@ public:
 	/*  <Accessors>  */
 
 	void setScale(float x, float y);
+	void setScale(sf::Vector2f scale);
 	sf::Vector2f getScale();
 
 	void setPosition(float x, float y);

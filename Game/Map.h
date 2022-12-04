@@ -21,35 +21,35 @@ private:
 	} tileSheet;
 
 	struct Exit {
-		const int x1;
-		const int x2;
-		const int y1;
-		const int y2;
+		sf::FloatRect rect;
 		const std::string nextMap;
-
-		Exit(int x1, int x2, int y1, int y2, std::string nextMap) :
-			x1(x1), x2(x2), y1(y1), y2(y2), nextMap(nextMap) {};
+	
+		Exit(int x, int y, float width, float height, std::string nextMap) :
+			rect(x, y, width, height), nextMap(nextMap) {};
 	};
 
-	std::vector<sf::Sprite*>* backgroundTiles;
-	std::vector<sf::Sprite*>* objects;
+	std::vector<sf::Sprite>* backgroundTiles;
+	std::vector<sf::Sprite>* objects;
+	sf::Vector2f m_actualBounds;
 
 	void loadMap(const char* map);
 	void loadTiles(std::string& csv, bool background);
 	void loadObject(tinyxml2::XMLElement* object);
 	void deleteForegroundTiles();
-	void deleteBackgroundTiles();
-	void deleteObjects();
 	tinyxml2::XMLElement* findProperty(tinyxml2::XMLElement* element, std::string property);
 public:
 	Map(const char* map);
 	~Map();
 
 	Exit* exit;
-	std::vector<Entity*>* foregroundTiles;
+	std::vector<std::vector<Entity*>>* foregroundTiles;
 	bool hitBoxesVisible;
 	bool originsVisible;
+	bool viewFollow;
 
+	sf::Vector2f getActualTileSize();
+	sf::Vector2f getActualBounds();
+	void setResolutionScale(sf::Vector2f scale);
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
 
