@@ -34,6 +34,7 @@ public:
 	/*  <Methods>  */
 
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+	virtual void onWindowResize(sf::Vector2f scale);
 	void move(float x, float y);
 	void move(sf::Vector2f dir);
 	void flip(bool right);

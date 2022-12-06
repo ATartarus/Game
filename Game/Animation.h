@@ -7,7 +7,7 @@ private:
 	sf::Sprite& sprite;
 	sf::IntRect frame;
 
-	float deltaTime;
+	float& deltaTime;
 
 	float totalIdleTime;
 	float totalRunTime;
@@ -21,9 +21,8 @@ private:
 
 	void initVariables();
 public:
-	Animation(sf::Sprite& sprite);
+	Animation(sf::Sprite& sprite, float& deltaTime);
 
-	void setDeltaTime(float delta);
-	void animate(Player_State state);
+	void animate(Move_State state);
 };
 

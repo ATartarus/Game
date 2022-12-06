@@ -22,6 +22,8 @@ private:
 	Player* player;
 
 	void updatePollEvent();
+	void updateView();
+	void updateConsole();
 public:
 	Game();
 	~Game();
@@ -35,9 +37,6 @@ public:
 	//Update
 
 	void update();
-	void updatePlayer();
-	void updateView();
-	void updateConsole();
 
 	//Util
 

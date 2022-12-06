@@ -149,8 +149,8 @@ void Map::loadMap(const char* map)
 			else
 			{
 				deleteForegroundTiles();
-				foregroundTiles = new std::vector<std::vector<Entity*>>(layer->FindAttribute("height")->IntValue());
-				for (auto& vec : *foregroundTiles) vec = std::vector<Entity*>(layer->FindAttribute("width")->IntValue());
+				foregroundTiles = new std::vector<std::vector<Tile*>>(layer->FindAttribute("height")->IntValue());
+				for (auto& vec : *foregroundTiles) vec = std::vector<Tile*>(layer->FindAttribute("width")->IntValue());
 				m_actualBounds = sf::Vector2f((*foregroundTiles)[0].size() * tileSheet.tile.x, foregroundTiles->size() * tileSheet.tile.y);
 				loadTiles(csv, false);
 			}
@@ -199,10 +199,10 @@ void Map::loadTiles(std::string& csv, bool background)
 			}
 			else
 			{
-				Entity* tmp = new Entity(sf::IntRect(spos, tileSheet.tile),
-										 sf::Vector2f(tileSheet.tile.x, tileSheet.tile.y),
-										 tileSheet.texture,
-										 Origin_Pos::CENTER);
+				Tile* tmp = new Tile(sf::IntRect(spos, tileSheet.tile),
+								     sf::Vector2f(tileSheet.tile.x, tileSheet.tile.y),
+									 tileSheet.texture);
+				if (csvMap[i][j] == 31)	tmp->isDamaging = true;
 				tmp->setPosition(wpos.x + tileSheet.tile.x / 2.0f, wpos.y + tileSheet.tile.y / 2.0f);
 				(*foregroundTiles)[i][j] = tmp;
 			}
@@ -323,7 +323,7 @@ sf::Vector2f Map::getActualBounds() const
 
 /*  <Render>  */
 
-void Map::setResolutionScale(sf::Vector2f scale)
+void Map::onWindowResize(sf::Vector2f scale)
 {
 	sf::Vector2f prevScale(0.0f, 0.0f);
 	while (!prevScale.x) {
@@ -339,8 +339,7 @@ void Map::setResolutionScale(sf::Vector2f scale)
 		for (auto t : vec)
 		{
 			if (t == nullptr) continue;
-			t->setPosition(t->getPosition().x * prodCoeff.x, t->getPosition().y * prodCoeff.y);
-			t->setScale(scale.x, scale.y);
+			t->onWindowResize(scale);
 		}
 	}
 

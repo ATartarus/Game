@@ -46,6 +46,13 @@ void Entity::draw(sf::RenderTarget& target, sf::RenderStates states) const
 	}
 }
 
+void Entity::onWindowResize(sf::Vector2f scale)
+{
+	sf::Vector2f prodCoeff = sf::Vector2f(scale.x / fabs(m_scale.x), scale.y / fabs(m_scale.y));
+	this->setScale((m_scale.x > 0) ? scale.x : -scale.x, scale.y);
+	this->setPosition(this->getPosition().x * prodCoeff.x, this->getPosition().y * prodCoeff.y);
+}
+
 void Entity::move(float x, float y)
 {
 	m_position.x += x;

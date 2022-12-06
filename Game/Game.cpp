@@ -7,13 +7,13 @@ Game::Game()
 {
 	window.create(sf::VideoMode(960, 540), "Game", sf::Style::Close);
 	map = new Map("test.tmx");
-	player = new Player();
+	player = new Player(*map->foregroundTiles, deltaTime);
 	player->setPosition(200.0f, 200.0f);
 	console = new Console();
 
+
 	deltaTime = 0.0f;
 	e = sf::Event();
-
 }
 
 Game::~Game()
@@ -48,7 +48,7 @@ void Game::update()
 
 	updatePollEvent();
 
-	updatePlayer();
+	player->update();
 
 
 	if (map->exit != nullptr &&
@@ -92,27 +92,6 @@ void Game::updatePollEvent()
 	}
 }
 
-void Game::updatePlayer()
-{
-	this->player->update(deltaTime);
-
-	int Y1 = static_cast<int>((player->getPosition().y - player->getActualBounds().y) / map->getActualTileSize().y);
-	int Y2 = static_cast<int>(player->getPosition().y / map->getActualTileSize().y + 1);
-	int X1 = static_cast<int>((player->getPosition().x - player->getActualBounds().x / 2.0f) / map->getActualTileSize().x);
-	int X2 = static_cast<int>(X1 + player->getActualBounds().x / map->getActualTileSize().x + 1);
-
-	if (Y1 < 0) Y1 = 0;
-	if (Y2 > map->foregroundTiles->size()) Y2 = static_cast<int>(map->foregroundTiles->size());
-	if (X1 < 0) X1 = 0;
-	if (X2 > (*map->foregroundTiles)[0].size()) X2 = static_cast<int>((*map->foregroundTiles)[0].size());
-
-	for (int i = Y1; i < Y2; i++) {
-		for (int j = X1; j < X2; j++) {
-			if ((*map->foregroundTiles)[i][j] == nullptr) continue;
-			player->updateCollision(*(*map->foregroundTiles)[i][j]);
-		}
-	}
-}
 
 void Game::updateView()
 {
@@ -146,13 +125,14 @@ void Game::changeMap()
 
 	delete map;
 	map = new Map(nextMap.c_str());
-	map->setResolutionScale(sf::Vector2f(window.getSize().x / resolution._default.x, window.getSize().y / resolution._default.y));
+	map->onWindowResize(sf::Vector2f(window.getSize().x / resolution._default.x, window.getSize().y / resolution._default.y));
 	player->setPosition((player->getPosition().x > map->exit->rect.left) ?
 		map->exit->rect.left + map->exit->rect.width + 5.0f :
 		map->exit->rect.left - 5.0f,
 		map->exit->rect.top + map->exit->rect.height);
 	player->showHitBox = false;
 	player->showOrigin = false;
+	player->collider->mapChange(*map->foregroundTiles);
 
 	if (map->viewFollow) focusView();
 }
@@ -192,9 +172,9 @@ void Game::render()
 void Game::onWindowResize()
 {
 	sf::Vector2f scale(resolution.fullScreen.x / window.getSize().x, resolution.fullScreen.y / window.getSize().y);
-	map->setResolutionScale(scale);
-	player->setResolutionScale(2.0f * scale);
-	console->setResolutionScale(scale);
+	map->onWindowResize(scale);
+	player->onWindowResize(2.0f * scale);
+	console->onWindowResize(scale);
 	if (scale == sf::Vector2f(1.0f, 1.0f))
 	{
 		window.create(sf::VideoMode(resolution._default.x, resolution._default.y), "Game", sf::Style::Close);

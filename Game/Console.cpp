@@ -13,7 +13,7 @@ Console::Console()
 	background.setFillColor(sf::Color::Color(85, 85, 85, 180));
 }
 
-void Console::setResolutionScale(sf::Vector2f scale)
+void Console::onWindowResize(sf::Vector2f scale)
 {
 	background.setSize(sf::Vector2f(background.getSize().x * (scale.x / this->scale.x), background.getSize().y * (scale.y / this->scale.y)));
 	text.setCharacterSize(fontSize *= (scale.x / this->scale.x));

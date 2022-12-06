@@ -7,7 +7,7 @@
 #include <iostream>
 
 
-enum class Player_State : uint32_t
+enum class Move_State : uint32_t
 {
 	IDLE = 0,
 	MOVING_LEFT = 1,
