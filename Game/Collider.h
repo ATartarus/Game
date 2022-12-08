@@ -16,7 +16,7 @@ public:
 	Collider(Creature& creature, std::vector<std::vector<Tile*>>& tiles);
 
 	void mapChange(std::vector<std::vector<Tile*>>& tiles);
-	void mapChange();
+	void onMapScaleChange();
 	//Returns direction from witch player collides with the entitiy relative to the entity
 	sf::Vector2i Check();
 };

@@ -10,10 +10,10 @@ Collider::Collider(Creature& creature, std::vector<std::vector<Tile*>>& tiles) :
 void Collider::mapChange(std::vector<std::vector<Tile*>>& tile)
 {
 	this->tiles = &tile;
-	mapChange();
+	onMapScaleChange();
 }
 
-void Collider::mapChange()
+void Collider::onMapScaleChange()
 {
 	tileSize = (*tiles)[0][0]->getActualBounds();
 }

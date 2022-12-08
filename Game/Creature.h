@@ -11,9 +11,10 @@ protected:
 	Move_State moveState;
 	Animation* animation;
 
-	float& deltaTime;
+	const float& deltaTime;
 	float m_health;
 	sf::Clock stagger;
+	float staggerTime;
 
 	sf::Vector2f velocity;
 	sf::Vector2f acceleration;
@@ -37,12 +38,14 @@ public:
 			 sf::Vector2f hitBox, 
 			 std::string texture, 
 			 std::vector<std::vector<Tile*>>& tiles, 
-			 float& deltaTime,
+			 const float& deltaTime,
 			 std::string className = "Creature"
 			);
 	virtual ~Creature();
 
 	Collider* collider;
+
+	bool isAlive;
 
 	virtual void update() = 0;
 

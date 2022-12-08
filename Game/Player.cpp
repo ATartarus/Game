@@ -3,7 +3,7 @@
 
 //Initialization
 
-Player::Player(std::vector<std::vector<Tile*>>& tiles, float& deltaTime) : 
+Player::Player(std::vector<std::vector<Tile*>>& tiles, const float& deltaTime) : 
 	    Creature(
 			   sf::IntRect(0, 0, 40, 50),
 			   sf::Vector2f(15.0f, 42.0f),
@@ -22,6 +22,7 @@ Player::~Player()
 
 void Player::initVariables()
 {
+	staggerTime = 0.5f;
 	velocityMax = 160.0f;
 	acceleration.x = 10.0f;
 	deceleration = acceleration.x * 3.0f;
@@ -33,6 +34,9 @@ void Player::update()
 {
 	updateMovement();
 	updateCollision();
+	if (stagger.getElapsedTime().asSeconds() < staggerTime)
+		animation->guardEffect();
+	else sprite.setColor(sf::Color::White);
 }
 
 void Player::updateMovement()

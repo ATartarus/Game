@@ -1,20 +1,27 @@
 #include "Game.h"
 
+/*  <Constructors/Destructors>  */
 
-//Cons/Dest
-
-Game::Game() 
+Game::Game(sf::RenderWindow& window, Switch_Flag& flag, const float& deltaTime) : WindowBase(window, flag),
+	deltaTime(deltaTime)
 {
-	window.create(sf::VideoMode(960, 540), "Game", sf::Style::Close);
 	map = new Map("test.tmx");
 	player = new Player(*map->foregroundTiles, deltaTime);
 	player->setPosition(200.0f, 200.0f);
 	console = new Console();
 
+	/* Load texture and other resources*/
+	sf::Texture tmp;
+	tmp.loadFromFile("Texture\\DeathScreen.png");
+	textures.emplace("background", tmp);
 
-	deltaTime = 0.0f;
-	e = sf::Event();
+
+	gameOverBackground.setTexture(textures["background"], true);
+	gameOverBackground.setScale(window.getSize().x / gameOverBackground.getGlobalBounds().width,
+								window.getSize().y / gameOverBackground.getGlobalBounds().height);
+	gameOverBackground.setColor(sf::Color(255, 0, 0, 155));
 }
+
 
 Game::~Game()
 {
@@ -23,33 +30,21 @@ Game::~Game()
 	delete console;
 }
 
-//Accessors
+/*  </Constructors/Destructors>  */
 
-const sf::RenderWindow& Game::getWindow() const
-{
-	return window;
-}
 
-const float Game::getDeltaTime() const
-{
-	return deltaTime;
-}
+/*#################################################################################################################################################*/
 
-void Game::setDeltaTime(float deltaTime)
-{
-	this->deltaTime = deltaTime;
-}
 
-//Update
+/*  <Update methods>  */
 
 void Game::update()
 {
 	console->clearOutput();
 
-	updatePollEvent();
+	updateEvent();
 
-	player->update();
-
+	if (player->isAlive) player->update();
 
 	if (map->exit != nullptr &&
 		(player->getPosition().x >= map->exit->rect.left && player->getPosition().x <= map->exit->rect.left + map->exit->rect.width) &&
@@ -63,9 +58,10 @@ void Game::update()
 	if (console->isEnabled) updateConsole();
 }
 
-void Game::updatePollEvent()
+
+void Game::updateEvent()
 {
-	while (window.pollEvent(this->e))
+	while (window.pollEvent(e))
 	{
 		if (e.type == sf::Event::Closed)
 		{
@@ -81,9 +77,13 @@ void Game::updatePollEvent()
 			map->originsVisible = !map->originsVisible;
 			player->showOrigin = !player->showOrigin;
 		}
-		if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::F3) 
+		if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::F3)
 		{
 			onWindowResize();
+		}
+		if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Escape)
+		{
+			switchFlag = Switch_Flag::MAIN_MENU;
 		}
 		if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Tilde)
 		{
@@ -112,11 +112,30 @@ void Game::updateView()
 	window.setView(sf::View(sf::Vector2f(shift.x + window.getView().getCenter().x, shift.y + window.getView().getCenter().y), sf::Vector2f(window.getSize())));
 }
 
+
 void Game::updateConsole()
 {
 	console->setOutput(player->getFrameLog());
 	console->setOutput("DeltaTime: " + std::to_string(deltaTime) + "\n");
 }
+
+/*  </Update methods>  */
+
+
+/*#################################################################################################################################################*/
+
+
+void Game::onWindowResize()
+{
+	sf::Vector2f scale(resolution.fullScreen.x / window.getSize().x, resolution.fullScreen.y / window.getSize().y);
+	WindowBase::onWindowResize();
+	map->onWindowResize(scale);
+	player->onWindowResize(2.0f * scale);
+	console->onWindowResize(scale);
+
+	if (map->viewFollow) focusView();
+}
+
 
 void Game::changeMap()
 {
@@ -137,6 +156,7 @@ void Game::changeMap()
 	if (map->viewFollow) focusView();
 }
 
+
 void Game::focusView()
 {
 	sf::View view(player->getPosition(), sf::Vector2f(window.getSize()));
@@ -150,39 +170,23 @@ void Game::focusView()
 	window.setView(view);
 }
 
-//Render
 
-void Game::render()
+void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-	window.clear();
-
-	window.draw(*map);
-	window.draw(*player);
-	if (console->isEnabled) {
+	target.draw(*map);
+	target.draw(*player);
+	if (console->isEnabled)
+	{
 		sf::View tmp = window.getView();
 		window.setView(window.getDefaultView());
-		window.draw(*console);
+		target.draw(*console);
 		window.setView(tmp);
 	}
-
-	window.display();
-}
-
-
-void Game::onWindowResize()
-{
-	sf::Vector2f scale(resolution.fullScreen.x / window.getSize().x, resolution.fullScreen.y / window.getSize().y);
-	map->onWindowResize(scale);
-	player->onWindowResize(2.0f * scale);
-	console->onWindowResize(scale);
-	if (scale == sf::Vector2f(1.0f, 1.0f))
+	if (!player->isAlive)
 	{
-		window.create(sf::VideoMode(resolution._default.x, resolution._default.y), "Game", sf::Style::Close);
+		sf::View tmp = window.getView();
+		window.setView(window.getDefaultView());
+		target.draw(gameOverBackground);
+		window.setView(tmp);
 	}
-	else
-	{
-		window.create(sf::VideoMode(resolution.fullScreen.x, resolution.fullScreen.y), "Game", sf::Style::Fullscreen);
-	}
-
-	if (map->viewFollow) focusView();
 }

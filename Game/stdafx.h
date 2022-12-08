@@ -26,6 +26,14 @@ enum class Origin_Pos : uint32_t
 	BOTTOM = (1 << 4),
 };
 
+enum class Switch_Flag : uint32_t
+{
+	IDLE = 0,
+	MAIN_MENU,
+	GAME,
+	GAME_OVER,
+};
+
 
 constexpr inline bool operator==(const uint32_t& left, const Origin_Pos& right)
 {

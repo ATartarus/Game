@@ -1,6 +1,6 @@
 #include "Animation.h"
 
-Animation::Animation(sf::Sprite& sprite, float& deltaTime) :
+Animation::Animation(sf::Sprite& sprite, const float& deltaTime) :
 	sprite(sprite), frame(sprite.getTextureRect()), deltaTime(deltaTime)
 {
 	initVariables();
@@ -8,12 +8,11 @@ Animation::Animation(sf::Sprite& sprite, float& deltaTime) :
 
 void Animation::initVariables()
 {
-	deltaTime = 0.1f;
-
 	totalIdleTime = -1.0f;
 	totalRunTime = -1.0f;
 	totalJumpTime = -1.0f;
 	totalFallTime = -1.0f;
+	totalGuardTime = 0.0f;
 }
 
 
@@ -118,5 +117,19 @@ void Animation::animate(Move_State state)
 		break;
 	}
 	sprite.setTextureRect(frame);
+}
+
+void Animation::guardEffect()
+{
+	totalGuardTime += deltaTime;
+	if (totalGuardTime >= guardFrequency)
+	{
+		totalGuardTime -= guardFrequency;
+		if (sprite.getColor() == sf::Color::White)
+		{
+			sprite.setColor(sf::Color(255, 0, 0));
+		}
+		else sprite.setColor(sf::Color::White);
+	}
 }
 

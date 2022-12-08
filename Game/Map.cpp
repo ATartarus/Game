@@ -46,7 +46,6 @@ void Map::deleteBackgroundLayers()
 	delete backgroundLayers;
 }
 
-
 /*  </Constructors/Destructors>  */
 
 

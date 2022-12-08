@@ -3,8 +3,9 @@
 void Creature::initVariables()
 {
 	m_health = 10.0f;
+	staggerTime = 2.0f;
 
-
+	isAlive = true;
 	moveState = Move_State::IDLE;
 	velocityMax = 100.0f;
 	acceleration = sf::Vector2f(5.0f, 981.0f);
@@ -27,7 +28,7 @@ Creature::Creature(sf::IntRect SpriteRect,
 				   sf::Vector2f hitBox, 
 				   std::string textureFile, 
 				   std::vector<std::vector<Tile*>>& tiles, 
-				   float& deltaTime,
+				   const float& deltaTime,
 				   std::string className
 				  ) :
 			Entity(SpriteRect, hitBox, texture, Origin_Pos::BOTTOM | Origin_Pos::CENTER), 
@@ -83,10 +84,11 @@ void Creature::yCollisionCheck(sf::Vector2i& direction)
 
 void Creature::onDamageRecieve()
 {
-	if (stagger.getElapsedTime().asSeconds() >= 0.5f)
+	if (stagger.getElapsedTime().asSeconds() >= staggerTime)
 	{
 		stagger.restart();
 		m_health -= 1.0f;
+		if (m_health <= 0) isAlive = false;
 	}
 }
 
@@ -99,5 +101,5 @@ void Creature::onWindowResize(sf::Vector2f scale)
 	acceleration *= prodCoeff.x;
 	deceleration *= prodCoeff.x;
 	jump.height *= prodCoeff.y;
-	collider->mapChange();
+	collider->onMapScaleChange();
 }

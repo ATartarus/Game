@@ -142,6 +142,8 @@
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Creature.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="Controller.cpp" />
+    <ClCompile Include="MainMenu.cpp" />
     <ClCompile Include="Map.cpp" />
     <ClCompile Include="Entity.cpp" />
     <ClCompile Include="main.cpp">
@@ -155,6 +157,7 @@
     </ClCompile>
     <ClCompile Include="Tile.cpp" />
     <ClCompile Include="Tinyxml2\tinyxml2.cpp" />
+    <ClCompile Include="WindowBase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Animation.h" />
@@ -162,6 +165,8 @@
     <ClInclude Include="Console.h" />
     <ClInclude Include="Creature.h" />
     <ClInclude Include="Game.h" />
+    <ClInclude Include="Controller.h" />
+    <ClInclude Include="MainMenu.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="Entity.h" />
@@ -169,6 +174,7 @@
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="Tile.h" />
     <ClInclude Include="Tinyxml2\tinyxml2.h" />
+    <ClInclude Include="WindowBase.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

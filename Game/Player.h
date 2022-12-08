@@ -8,10 +8,9 @@ private:
 	void updateMovement();
 	virtual void initVariables() override;
 public:
-	Player(std::vector<std::vector<Tile*>>& tiles, float& deltaTime);
+	Player(std::vector<std::vector<Tile*>>& tiles, const float& deltaTime);
 	virtual ~Player();
 
-	//Update
 	virtual void update() override;
 
 	void updateCollision();

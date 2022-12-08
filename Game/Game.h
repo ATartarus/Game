@@ -1,52 +1,31 @@
 #pragma once
-#include "stdafx.h"
+#include "WindowBase.h"
 #include "Map.h"
 #include "Player.h"
 #include "Console.h"
 
-class Game
+class Game : public WindowBase
 {
 private:
-	//Window
-	struct Resolution {
-		const sf::Vector2f _default = sf::Vector2f(960.0f, 540.0f);
-		const sf::Vector2f fullScreen = sf::Vector2f(1920.0f, 1080.0f);
-	} resolution;
-	sf::RenderWindow window;
-	sf::Event e;
-	float deltaTime;
-
-
-	Console* console;
-	Map* map;
 	Player* player;
+	Map* map;
+	Console* console;
+	const float& deltaTime;
 
-	void updatePollEvent();
-	void updateView();
-	void updateConsole();
-public:
-	Game();
-	~Game();
-
-	//Accessors
-
-	const sf::RenderWindow& getWindow() const;
-	const float getDeltaTime() const;
-	void setDeltaTime(float deltaTime);
-
-	//Update
-
-	void update();
-
-	//Util
+	sf::Sprite gameOverBackground;
 
 	void changeMap();
 	void focusView();
+	void updateView();
+	void updateConsole();
+public:
+	Game(sf::RenderWindow& window, Switch_Flag& flag, const float& deltaTime);
+	~Game();
 
-	//Render
 
-	void render();
-
-	void onWindowResize();
+	virtual void update() override;
+	virtual void updateEvent() override;
+	virtual void onWindowResize() override;
+	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
 
