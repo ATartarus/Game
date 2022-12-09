@@ -1,7 +1,8 @@
 #pragma once
 #include "stdafx.h"
+#include "Button.h"
 
-class WindowBase : public sf::Drawable
+class Scene : public sf::Drawable
 {
 protected:
 	sf::RenderWindow& window;
@@ -9,16 +10,19 @@ protected:
 	Switch_Flag& switchFlag;
 	sf::Font font;
 
+	sf::Vector2f m_contentScale;
 	std::map<std::string, sf::Texture> textures;
+	std::vector<Button> buttons;
 
 	struct Resolution {
 		const sf::Vector2f _default = sf::Vector2f(960.0f, 540.0f);
 		const sf::Vector2f fullScreen = sf::Vector2f(1920.0f, 1080.0f);
 	} resolution;
 
+	virtual void loadTextures() = 0;
 public:
-	WindowBase(sf::RenderWindow& window, Switch_Flag& flag);
-	virtual ~WindowBase() = 0 {};
+	Scene(sf::RenderWindow& window, Switch_Flag& flag);
+	virtual ~Scene() = 0 {};
 
 
 	virtual void update() = 0;

@@ -41,6 +41,7 @@ private:
 	sf::Vector2f m_actualBounds;
 	std::vector<sf::Sprite>* objects;
 	std::vector<BackgroundLayer>* backgroundLayers;
+	sf::Vector2f m_scale;
 private:
 
 	void loadMap(const char* map);
@@ -61,7 +62,7 @@ public:
 	bool originsVisible;
 	bool viewFollow;
 
-
+	sf::Vector2f getScale() const;
 	sf::Vector2f getActualTileSize() const;
 	sf::Vector2f getActualBounds() const;
 	void onWindowResize(sf::Vector2f scale);

@@ -1,5 +1,27 @@
 #include "Creature.h"
 
+
+Creature::Creature(sf::Vector2f hitBox,
+				   sf::Texture& texture,
+				   sf::IntRect textureRect,
+				   std::vector<std::vector<Tile*>>& tiles,
+				   const float& deltaTime
+				  ) :
+			Entity(hitBox, texture, textureRect, Origin_Pos::BOTTOM | Origin_Pos::CENTER), 
+			deltaTime(deltaTime)
+{
+	initVariables();
+	animation = new Animation(this->sprite, deltaTime);
+	collider = new Collider(*this, tiles);
+}
+
+Creature::~Creature()
+{
+	delete animation;
+	delete collider;
+}
+
+
 void Creature::initVariables()
 {
 	m_health = 10.0f;
@@ -15,36 +37,6 @@ void Creature::initVariables()
 	jump.keyHold = false;
 }
 
-void Creature::initTexture(std::string png, std::string className = "Creature")
-{
-	std::string PATH = "Texture\\" + png;
-	if (!texture.loadFromFile(PATH))
-	{
-		std::cout << className << "::Could not load texture" << "\n";
-	}
-}
-
-Creature::Creature(sf::IntRect SpriteRect, 
-				   sf::Vector2f hitBox, 
-				   std::string textureFile, 
-				   std::vector<std::vector<Tile*>>& tiles, 
-				   const float& deltaTime,
-				   std::string className
-				  ) :
-			Entity(SpriteRect, hitBox, texture, Origin_Pos::BOTTOM | Origin_Pos::CENTER), 
-			deltaTime(deltaTime)
-{
-	initVariables();
-	initTexture(textureFile, className);
-	animation = new Animation(this->sprite, deltaTime);
-	collider = new Collider(*this, tiles);
-}
-
-Creature::~Creature()
-{
-	delete animation;
-	delete collider;
-}
 
 void Creature::moveLeft()
 {

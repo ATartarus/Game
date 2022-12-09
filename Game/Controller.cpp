@@ -39,9 +39,9 @@ void Controller::setDeltaTime(const float deltaTime)
 
 void Controller::update()
 {
-	if (switchFlag != Switch_Flag::IDLE) switchWindow();
-
 	currentWindow->update();
+
+	if (switchFlag != Switch_Flag::IDLE) switchWindow();
 }
 
 void Controller::switchWindow()

@@ -2,24 +2,27 @@
 
 /*  <Constructors/Destructors>  */
 
-Game::Game(sf::RenderWindow& window, Switch_Flag& flag, const float& deltaTime) : WindowBase(window, flag),
+Game::Game(sf::RenderWindow& window, Switch_Flag& flag, const float& deltaTime) : Scene(window, flag),
 	deltaTime(deltaTime)
 {
+	loadTextures();
 	map = new Map("test.tmx");
-	player = new Player(*map->foregroundTiles, deltaTime);
+	player = new Player(textures["player"], *map->foregroundTiles, deltaTime);
 	player->setPosition(200.0f, 200.0f);
 	console = new Console();
 
-	/* Load texture and other resources*/
-	sf::Texture tmp;
-	tmp.loadFromFile("Texture\\DeathScreen.png");
-	textures.emplace("background", tmp);
 
-
-	gameOverBackground.setTexture(textures["background"], true);
+	gameOverBackground.setTexture(textures["background"]);
 	gameOverBackground.setScale(window.getSize().x / gameOverBackground.getGlobalBounds().width,
 								window.getSize().y / gameOverBackground.getGlobalBounds().height);
 	gameOverBackground.setColor(sf::Color(255, 0, 0, 155));
+
+	sf::Vector2f scale = sf::Vector2f(window.getSize()) / resolution._default;
+	if (m_contentScale != scale)
+	{
+		m_contentScale = scale;
+		resizeContent(m_contentScale);
+	}
 }
 
 
@@ -29,6 +32,28 @@ Game::~Game()
 	delete player;
 	delete console;
 }
+
+
+void Game::loadTextures()
+{
+	sf::Texture tmp;
+
+	if (!tmp.loadFromFile("Texture\\player_sheet.png")) {
+		std::cout << "Game::loadTextures could not load player_sheet.png" << "\n";
+		return;
+	}
+
+	textures.emplace("player", tmp);
+	
+
+	if (!tmp.loadFromFile("Texture\\deathScreen.png")) {
+		std::cout << "Game::loadTextures could not load deathScreen.png" << "\n";
+		return;
+	}
+
+	textures.emplace("background", tmp);
+}
+
 
 /*  </Constructors/Destructors>  */
 
@@ -119,6 +144,7 @@ void Game::updateConsole()
 	console->setOutput("DeltaTime: " + std::to_string(deltaTime) + "\n");
 }
 
+
 /*  </Update methods>  */
 
 
@@ -127,13 +153,19 @@ void Game::updateConsole()
 
 void Game::onWindowResize()
 {
-	sf::Vector2f scale(resolution.fullScreen.x / window.getSize().x, resolution.fullScreen.y / window.getSize().y);
-	WindowBase::onWindowResize();
+	Scene::onWindowResize();
+	resizeContent(m_contentScale);
+
+	if (map->viewFollow) focusView();
+}
+
+
+void Game::resizeContent(sf::Vector2f scale)
+{
 	map->onWindowResize(scale);
 	player->onWindowResize(2.0f * scale);
 	console->onWindowResize(scale);
-
-	if (map->viewFollow) focusView();
+	gameOverBackground.setScale(scale);
 }
 
 

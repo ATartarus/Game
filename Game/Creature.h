@@ -27,21 +27,19 @@ protected:
 	} jump;
 
 	virtual void initVariables();
-	void initTexture(std::string png, std::string className);
 	virtual void updateCollision() = 0;
 	virtual void yCollisionCheck(sf::Vector2i& direction);
 	void moveLeft();
 	void moveRight();
 	void moveJump();
 public:
-	Creature(sf::IntRect SpriteRect,
-			 sf::Vector2f hitBox, 
-			 std::string texture, 
+	Creature(sf::Vector2f hitBox,
+			 sf::Texture& texture,
+		 	 sf::IntRect textureRect,
 			 std::vector<std::vector<Tile*>>& tiles, 
-			 const float& deltaTime,
-			 std::string className = "Creature"
+			 const float& deltaTime
 			);
-	virtual ~Creature();
+	~Creature();
 
 	Collider* collider;
 
@@ -49,7 +47,7 @@ public:
 
 	virtual void update() = 0;
 
-	virtual void onDamageRecieve();
-	virtual void onWindowResize(sf::Vector2f scale) override;
+	void onDamageRecieve();
+	void onWindowResize(sf::Vector2f scale) override;
 };
 

@@ -4,7 +4,9 @@
 class Tile : public Entity
 {
 public:
-	Tile(sf::IntRect spriteRect, sf::Vector2f hitBox, sf::Texture& texture);
+	Tile(sf::Vector2f hitBox, sf::Texture& texture, sf::IntRect textureRect);
 	bool isDamaging;
+
+	virtual void onWindowResize(sf::Vector2f scale) override;
 };
 

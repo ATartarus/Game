@@ -13,7 +13,7 @@ private:
 	sf::RenderWindow window;
 	float deltaTime;
 
-	WindowBase* currentWindow;
+	Scene* currentWindow;
 	Switch_Flag switchFlag;
 
 	void switchWindow();
@@ -30,9 +30,6 @@ public:
 
 
 	void update();
-
-	//Util
-
 
 	void render();
 };

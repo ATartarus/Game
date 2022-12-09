@@ -32,6 +32,7 @@ enum class Switch_Flag : uint32_t
 	MAIN_MENU,
 	GAME,
 	GAME_OVER,
+	EXIT,
 };
 
 
@@ -43,4 +44,9 @@ constexpr inline bool operator==(const uint32_t& left, const Origin_Pos& right)
 constexpr inline Origin_Pos operator|(const Origin_Pos& left, const Origin_Pos& right)
 {
 	return static_cast<Origin_Pos>(static_cast<uint32_t>(left) | static_cast<uint32_t>(right));
+}
+
+inline sf::Vector2f operator/(const sf::Vector2f& left, const sf::Vector2f right)
+{
+	return sf::Vector2f(left.x / right.x, left.y / right.y);
 }

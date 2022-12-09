@@ -1,10 +1,10 @@
 #pragma once
-#include "WindowBase.h"
+#include "Scene.h"
 #include "Map.h"
 #include "Player.h"
 #include "Console.h"
 
-class Game : public WindowBase
+class Game : public Scene
 {
 private:
 	Player* player;
@@ -18,14 +18,17 @@ private:
 	void focusView();
 	void updateView();
 	void updateConsole();
+	void resizeContent(sf::Vector2f scale);
+
+	void loadTextures() override;
 public:
 	Game(sf::RenderWindow& window, Switch_Flag& flag, const float& deltaTime);
 	~Game();
 
 
-	virtual void update() override;
-	virtual void updateEvent() override;
-	virtual void onWindowResize() override;
-	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+	void update() override;
+	void updateEvent() override;
+	void onWindowResize() override;
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
 

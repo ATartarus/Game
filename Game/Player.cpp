@@ -3,14 +3,13 @@
 
 //Initialization
 
-Player::Player(std::vector<std::vector<Tile*>>& tiles, const float& deltaTime) : 
+Player::Player(sf::Texture& texture, std::vector<std::vector<Tile*>>& tiles, const float& deltaTime) : 
 	    Creature(
-			   sf::IntRect(0, 0, 40, 50),
 			   sf::Vector2f(15.0f, 42.0f),
-			   "player_sheet.png",
+			   texture,
+			   sf::IntRect(0, 0, 40, 50),
 			   tiles,
-			   deltaTime,
-			   "Player")
+			   deltaTime)
 {
 	initVariables();
 	this->setScale(2.0f, 2.0f);

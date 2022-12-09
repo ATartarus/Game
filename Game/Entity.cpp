@@ -1,17 +1,18 @@
 #include "Entity.h"
 
-Entity::Entity(sf::IntRect spriteFrame, sf::Vector2f hitBox, sf::Texture& texture, Origin_Pos position)
+Entity::Entity(sf::Vector2f hitBox, sf::Texture& texture, sf::IntRect textureRect, Origin_Pos position)
 {
-	this->sprite.setTextureRect(spriteFrame);
+	if (textureRect != sf::IntRect(0, 0, 0, 0))
+		this->sprite.setTextureRect(textureRect);
 
 	switch (position)
 	{
 	case Origin_Pos::BOTTOM | Origin_Pos::CENTER:
-		this->sprite.setOrigin(spriteFrame.width / 2.0f, (float)spriteFrame.height);
+		this->sprite.setOrigin(textureRect.width / 2.0f, (float)textureRect.height);
 		this->hitBox.setOrigin(hitBox.x / 2.0f, hitBox.y);
 		break;
 	case Origin_Pos::CENTER:
-		this->sprite.setOrigin(spriteFrame.width / 2.0f, spriteFrame.height / 2.0f);
+		this->sprite.setOrigin(textureRect.width / 2.0f, textureRect.height / 2.0f);
 		this->hitBox.setOrigin(hitBox.x / 2.0f, hitBox.y / 2.0f);
 		break;
 	}

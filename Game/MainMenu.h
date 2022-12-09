@@ -1,18 +1,22 @@
 #pragma once
-#include "WindowBase.h"
+#include "Scene.h"
 
-class MainMenu : public WindowBase
+
+class MainMenu : public Scene
 {
 private:
 	sf::Sprite background;
+
+	void loadTextures() override;
+	void initButtons();
 public:
 	MainMenu(sf::RenderWindow& window, Switch_Flag& flag);
 	~MainMenu();
 
 
-	virtual void updateEvent() override;
-	virtual void update() override;
-	virtual void onWindowResize() override;
-	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
+	void updateEvent() override;
+	void update() override;
+	void onWindowResize() override;
+	void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
 

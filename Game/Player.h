@@ -6,12 +6,12 @@ class Player : public Creature
 {
 private:
 	void updateMovement();
-	virtual void initVariables() override;
+	void initVariables() override;
 public:
-	Player(std::vector<std::vector<Tile*>>& tiles, const float& deltaTime);
-	virtual ~Player();
+	Player(sf::Texture& texture, std::vector<std::vector<Tile*>>& tiles, const float& deltaTime);
+	~Player();
 
-	virtual void update() override;
+	void update() override;
 
 	void updateCollision();
 
