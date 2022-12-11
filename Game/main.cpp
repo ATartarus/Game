@@ -1,18 +1,18 @@
 #include "stdafx.h"
-#include "Game.h"
+#include "Controller.h"
 
 int main()
 {
-    Game game;
+    Controller control;
     sf::Clock clock;
   
 
-    while (game.getWindow().isOpen()) 
+    while (control.getWindow().isOpen()) 
     {
-        game.setDeltaTime(clock.restart().asSeconds());
-        if (game.getDeltaTime() > 1.0f / 40.0f) game.setDeltaTime(1.0f / 40.0f);
-        game.update();
-        game.render();
+        control.setDeltaTime(clock.restart().asSeconds());
+        if (control.getDeltaTime() > 1.0f / 40.0f) control.setDeltaTime(1.0f / 40.0f);
+        control.update();
+        control.render();
     }
 
     return 0;

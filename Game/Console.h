@@ -16,7 +16,7 @@ public:
 
 	bool isEnabled = false;
 
-	void setResolutionScale(sf::Vector2f scale);
+	void onWindowResize(sf::Vector2f scale);
 	void setPosition(sf::Vector2f pos);
 	void setOutput(std::string str);
 	void clearOutput();

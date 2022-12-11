@@ -1,30 +1,25 @@
 #include "Animation.h"
 
-Animation::Animation(sf::Sprite& sprite) :
-	sprite(sprite), frame(sprite.getTextureRect())
+Animation::Animation(sf::Sprite& sprite, const float& deltaTime) :
+	sprite(sprite), frame(sprite.getTextureRect()), deltaTime(deltaTime)
 {
 	initVariables();
 }
 
 void Animation::initVariables()
 {
-	deltaTime = 0.1f;
-
 	totalIdleTime = -1.0f;
 	totalRunTime = -1.0f;
 	totalJumpTime = -1.0f;
 	totalFallTime = -1.0f;
+	totalGuardTime = 0.0f;
 }
 
-void Animation::setDeltaTime(float delta)
-{
-	deltaTime = delta;
-}
 
-void Animation::animate(Player_State state)
+void Animation::animate(Move_State state)
 {
 	switch (state) {
-	case Player_State::IDLE:
+	case Move_State::IDLE:
 		if (totalIdleTime == -1) {
 			frame.left = -40;
 			totalIdleTime = idleSwitchTime;
@@ -44,7 +39,7 @@ void Animation::animate(Player_State state)
 		totalJumpTime = -1;
 		totalFallTime = -1;
 		break;
-	case Player_State::JUMPING:
+	case Move_State::JUMPING:
 		if (totalJumpTime == -1) {
 			frame.left = -40;
 			totalJumpTime = jumpSwitchTime;
@@ -64,7 +59,7 @@ void Animation::animate(Player_State state)
 		totalRunTime = -1;
 		totalFallTime = -1;
 		break;
-	case Player_State::FALLING:
+	case Move_State::FALLING:
 		if (totalFallTime == -1) {
 			totalFallTime = 0;
 		}
@@ -80,7 +75,7 @@ void Animation::animate(Player_State state)
 		totalRunTime = -1;
 		totalJumpTime = -1;
 		break;
-	case Player_State::MOVING_RIGHT:
+	case Move_State::MOVING_RIGHT:
 		if (totalRunTime == -1) {
 			frame.left = -40;
 			totalRunTime = runSwitchTime;
@@ -100,7 +95,7 @@ void Animation::animate(Player_State state)
 		totalJumpTime = -1;
 		totalFallTime = -1;
 		break;
-	case Player_State::MOVING_LEFT:
+	case Move_State::MOVING_LEFT:
 		if (totalRunTime == -1) {
 			frame.left = -40;
 			totalRunTime = runSwitchTime;
@@ -122,5 +117,19 @@ void Animation::animate(Player_State state)
 		break;
 	}
 	sprite.setTextureRect(frame);
+}
+
+void Animation::guardEffect()
+{
+	totalGuardTime += deltaTime;
+	if (totalGuardTime >= guardFrequency)
+	{
+		totalGuardTime -= guardFrequency;
+		if (sprite.getColor() == sf::Color::White)
+		{
+			sprite.setColor(sf::Color(255, 0, 0));
+		}
+		else sprite.setColor(sf::Color::White);
+	}
 }
 

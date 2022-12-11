@@ -1,20 +1,32 @@
 #include "Game.h"
 
 
-//Cons/Dest
+/*  <Constructors/Destructors>  */
 
-Game::Game() 
+
+Game::Game(sf::RenderWindow& window, Switch_Flag& flag, const float& deltaTime) : Scene(window, flag),
+	deltaTime(deltaTime)
 {
-	window.create(sf::VideoMode(960, 540), "Game", sf::Style::Close);
-	map = new Map("test.tmx");
-	player = new Player();
+	loadTextures();
+	map = new Map("newtest.tmx");
+	player = new Player(textures["player"], *map->foregroundTiles, deltaTime);
 	player->setPosition(200.0f, 200.0f);
 	console = new Console();
 
-	deltaTime = 0.0f;
-	e = sf::Event();
 
+	gameOverBackground.setTexture(textures["background"]);
+	gameOverBackground.setScale(window.getSize().x / gameOverBackground.getGlobalBounds().width,
+								window.getSize().y / gameOverBackground.getGlobalBounds().height);
+	gameOverBackground.setColor(sf::Color(255, 0, 0, 155));
+
+	sf::Vector2f scale = sf::Vector2f(window.getSize()) / resolution._default;
+	if (m_contentScale != scale)
+	{
+		m_contentScale = scale;
+		resizeContent(m_contentScale);
+	}
 }
+
 
 Game::~Game()
 {
@@ -23,33 +35,49 @@ Game::~Game()
 	delete console;
 }
 
-//Accessors
 
-const sf::RenderWindow& Game::getWindow() const
+void Game::loadTextures()
 {
-	return window;
+	sf::Texture tmp;
+
+	if (!tmp.loadFromFile("Texture\\player_sheet.png")) {
+		std::cout << "Game::loadTextures could not load player_sheet.png" << "\n";
+		return;
+	}
+
+	textures.emplace("player", tmp);
+	
+
+	if (!tmp.loadFromFile("Texture\\deathScreen.png")) {
+		std::cout << "Game::loadTextures could not load deathScreen.png" << "\n";
+		return;
+	}
+
+	textures.emplace("background", tmp);
 }
 
-const float Game::getDeltaTime() const
+void Game::loadSounds()
 {
-	return deltaTime;
+
 }
 
-void Game::setDeltaTime(float deltaTime)
-{
-	this->deltaTime = deltaTime;
-}
 
-//Update
+/*  </Constructors/Destructors>  */
+
+
+/*#################################################################################################################################################*/
+
+
+/*  <Update methods>  */
+
 
 void Game::update()
 {
 	console->clearOutput();
 
-	updatePollEvent();
+	updateEvent();
 
-	updatePlayer();
-
+	if (player->isAlive) player->update();
 
 	if (map->exit != nullptr &&
 		(player->getPosition().x >= map->exit->rect.left && player->getPosition().x <= map->exit->rect.left + map->exit->rect.width) &&
@@ -63,9 +91,10 @@ void Game::update()
 	if (console->isEnabled) updateConsole();
 }
 
-void Game::updatePollEvent()
+
+void Game::updateEvent()
 {
-	while (window.pollEvent(this->e))
+	while (window.pollEvent(e))
 	{
 		if (e.type == sf::Event::Closed)
 		{
@@ -81,9 +110,13 @@ void Game::updatePollEvent()
 			map->originsVisible = !map->originsVisible;
 			player->showOrigin = !player->showOrigin;
 		}
-		if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::F3) 
+		if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::F3)
 		{
 			onWindowResize();
+		}
+		if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Escape)
+		{
+			switchFlag = Switch_Flag::MAIN_MENU;
 		}
 		if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Tilde)
 		{
@@ -92,27 +125,6 @@ void Game::updatePollEvent()
 	}
 }
 
-void Game::updatePlayer()
-{
-	this->player->update(deltaTime);
-
-	int Y1 = static_cast<int>((player->getPosition().y - player->getActualBounds().y) / map->getActualTileSize().y);
-	int Y2 = static_cast<int>(player->getPosition().y / map->getActualTileSize().y + 1);
-	int X1 = static_cast<int>((player->getPosition().x - player->getActualBounds().x / 2.0f) / map->getActualTileSize().x);
-	int X2 = static_cast<int>(X1 + player->getActualBounds().x / map->getActualTileSize().x + 1);
-
-	if (Y1 < 0) Y1 = 0;
-	if (Y2 > map->foregroundTiles->size()) Y2 = static_cast<int>(map->foregroundTiles->size());
-	if (X1 < 0) X1 = 0;
-	if (X2 > (*map->foregroundTiles)[0].size()) X2 = static_cast<int>((*map->foregroundTiles)[0].size());
-
-	for (int i = Y1; i < Y2; i++) {
-		for (int j = X1; j < X2; j++) {
-			if ((*map->foregroundTiles)[i][j] == nullptr) continue;
-			player->updateCollision(*(*map->foregroundTiles)[i][j]);
-		}
-	}
-}
 
 void Game::updateView()
 {
@@ -133,11 +145,23 @@ void Game::updateView()
 	window.setView(sf::View(sf::Vector2f(shift.x + window.getView().getCenter().x, shift.y + window.getView().getCenter().y), sf::Vector2f(window.getSize())));
 }
 
+
 void Game::updateConsole()
 {
 	console->setOutput(player->getFrameLog());
 	console->setOutput("DeltaTime: " + std::to_string(deltaTime) + "\n");
 }
+
+
+
+/*  </Update methods>  */
+
+
+/*#################################################################################################################################################*/
+
+
+/*  <Utility>  */
+
 
 void Game::changeMap()
 {
@@ -146,16 +170,18 @@ void Game::changeMap()
 
 	delete map;
 	map = new Map(nextMap.c_str());
-	map->setResolutionScale(sf::Vector2f(window.getSize().x / resolution._default.x, window.getSize().y / resolution._default.y));
+	map->onWindowResize(sf::Vector2f(window.getSize().x / resolution._default.x, window.getSize().y / resolution._default.y));
 	player->setPosition((player->getPosition().x > map->exit->rect.left) ?
 		map->exit->rect.left + map->exit->rect.width + 5.0f :
 		map->exit->rect.left - 5.0f,
 		map->exit->rect.top + map->exit->rect.height);
 	player->showHitBox = false;
 	player->showOrigin = false;
+	player->collider->mapChange(*map->foregroundTiles);
 
 	if (map->viewFollow) focusView();
 }
+
 
 void Game::focusView()
 {
@@ -170,39 +196,56 @@ void Game::focusView()
 	window.setView(view);
 }
 
-//Render
 
-void Game::render()
-{
-	window.clear();
+/*  </Utility>  */
 
-	window.draw(*map);
-	window.draw(*player);
-	if (console->isEnabled) {
-		sf::View tmp = window.getView();
-		window.setView(window.getDefaultView());
-		window.draw(*console);
-		window.setView(tmp);
-	}
 
-	window.display();
-}
+/*#################################################################################################################################################*/
+
+
+/*  <Render>  */
 
 
 void Game::onWindowResize()
 {
-	sf::Vector2f scale(resolution.fullScreen.x / window.getSize().x, resolution.fullScreen.y / window.getSize().y);
-	map->setResolutionScale(scale);
-	player->setResolutionScale(2.0f * scale);
-	console->setResolutionScale(scale);
-	if (scale == sf::Vector2f(1.0f, 1.0f))
-	{
-		window.create(sf::VideoMode(resolution._default.x, resolution._default.y), "Game", sf::Style::Close);
-	}
-	else
-	{
-		window.create(sf::VideoMode(resolution.fullScreen.x, resolution.fullScreen.y), "Game", sf::Style::Fullscreen);
-	}
+	Scene::onWindowResize();
+	resizeContent(m_contentScale);
 
 	if (map->viewFollow) focusView();
 }
+
+
+void Game::resizeContent(sf::Vector2f scale)
+{
+	map->onWindowResize(scale);
+	player->onWindowResize(2.0f * scale);
+	console->onWindowResize(scale);
+	gameOverBackground.setScale(scale);
+}
+
+
+void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+	target.draw(*map);
+	target.draw(*player);
+	if (console->isEnabled)
+	{
+		sf::View tmp = window.getView();
+		window.setView(window.getDefaultView());
+		target.draw(*console);
+		window.setView(tmp);
+	}
+	if (!player->isAlive)
+	{
+		sf::View tmp = window.getView();
+		window.setView(window.getDefaultView());
+		target.draw(gameOverBackground);
+		window.setView(tmp);
+	}
+}
+
+
+/*  </Render>  */
+
+
+/*#################################################################################################################################################*/

@@ -1,14 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <Filter Include="Source Files">
-      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
-      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
-    </Filter>
-    <Filter Include="Header Files">
-      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
-      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
-    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
@@ -16,69 +8,132 @@
     <Filter Include="Resource Files\Tinyxml2">
       <UniqueIdentifier>{cf5906e0-77b8-4863-bb52-fd9d0bdb4622}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Window Tree">
+      <UniqueIdentifier>{ebb9ad00-9e80-435f-8b19-9e5ba8ecd53a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Window Tree\Header">
+      <UniqueIdentifier>{d20925b6-4e1c-4686-8070-e3e6ae0c5606}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Window Tree\Source">
+      <UniqueIdentifier>{0844c3a2-4f36-46ad-aabb-679199784517}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Entity tree">
+      <UniqueIdentifier>{0bdbca21-736d-40f7-921c-0fc02568dd9f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Entity tree\Header">
+      <UniqueIdentifier>{80aea338-d52a-4491-a99c-aafe9eaf6c34}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Entity tree\Source">
+      <UniqueIdentifier>{da91036e-820c-4ff9-b86f-7f78b8bebea1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Other">
+      <UniqueIdentifier>{d6a57c28-e2ff-45ce-9f69-9a71e6a3ced8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Other\Header">
+      <UniqueIdentifier>{2555ec85-5e40-4300-8db9-2fff30012a63}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Other\Source">
+      <UniqueIdentifier>{87654028-bdc5-4250-8a74-f2f798622faa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="stdafx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Game.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Player.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Animation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Entity.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Map.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Tinyxml2\tinyxml2.cpp">
       <Filter>Resource Files\Tinyxml2</Filter>
     </ClCompile>
+    <ClCompile Include="Game.cpp">
+      <Filter>Window Tree\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="MainMenu.cpp">
+      <Filter>Window Tree\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene.cpp">
+      <Filter>Window Tree\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Creature.cpp">
+      <Filter>Entity tree\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Tile.cpp">
+      <Filter>Entity tree\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Entity.cpp">
+      <Filter>Entity tree\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>Entity tree\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Animation.cpp">
+      <Filter>Other\Source</Filter>
+    </ClCompile>
     <ClCompile Include="Collider.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Other\Source</Filter>
     </ClCompile>
     <ClCompile Include="Console.cpp">
-      <Filter>Source Files</Filter>
+      <Filter>Other\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Controller.cpp">
+      <Filter>Other\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>Other\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Map.cpp">
+      <Filter>Other\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Other\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Button.cpp">
+      <Filter>Entity tree\Source</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="stdafx.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Game.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Player.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Animation.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Entity.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Map.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="resource.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Tinyxml2\tinyxml2.h">
       <Filter>Resource Files\Tinyxml2</Filter>
     </ClInclude>
-    <ClInclude Include="Collider.h">
-      <Filter>Header Files</Filter>
+    <ClInclude Include="Game.h">
+      <Filter>Window Tree\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="MainMenu.h">
+      <Filter>Window Tree\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene.h">
+      <Filter>Window Tree\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>Entity tree\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Creature.h">
+      <Filter>Entity tree\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Tile.h">
+      <Filter>Entity tree\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Entity.h">
+      <Filter>Entity tree\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Other\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Map.h">
+      <Filter>Other\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Controller.h">
+      <Filter>Other\Header</Filter>
     </ClInclude>
     <ClInclude Include="Console.h">
-      <Filter>Header Files</Filter>
+      <Filter>Other\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Collider.h">
+      <Filter>Other\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Animation.h">
+      <Filter>Other\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Other\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Button.h">
+      <Filter>Entity tree\Header</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

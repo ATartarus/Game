@@ -1,43 +1,20 @@
 #pragma once
 #include "stdafx.h"
-#include "Animation.h"
-#include "Entity.h"
-#include "Collider.h"
+#include "Creature.h"
 
-class Player : public Entity
+class Player : public Creature
 {
 private:
-	//Model
-	sf::Texture texture;
-
-	//Animation
-	Player_State playerState;
-	Animation* animation;
-
-	//Physics
-	sf::Vector2f velocity;
-	sf::Vector2f acceleration;
-	float velocityMax;
-	float deceleration;
-	struct Jump {
-		float height;
-		bool allow;
-		bool keyHold;
-	} jump;
-
-	//Initialization
-	void initVariables();
-	void initTexture();
+	void updateMovement();
+	void initVariables() override;
 public:
-	Player();
+	Player(sf::Texture& texture, std::vector<std::vector<Tile*>>& tiles, const float& deltaTime);
 	~Player();
 
-	//Update
-	void update(float deltaTime);
-	void updateMovement(float deltaTime);
-	void updateCollision(Entity& tile);
-	std::string getFrameLog();
+	void update() override;
 
-	void setResolutionScale(sf::Vector2f scale);
+	void updateCollision();
+
+	std::string getFrameLog();
 };
 

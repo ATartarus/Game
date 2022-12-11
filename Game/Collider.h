@@ -1,11 +1,23 @@
 #pragma once
 #include "stdafx.h"
-#include "Entity.h"
+#include "Tile.h"
+
+class Creature;
 
 class Collider
 {
+private:
+	Creature* creature;
+	std::vector<std::vector<Tile*>>* tiles;
+	sf::Vector2f tileSize;
+
+	void calculate(Tile& tile, sf::Vector2i& direction);
 public:
+	Collider(Creature& creature, std::vector<std::vector<Tile*>>& tiles);
+
+	void mapChange(std::vector<std::vector<Tile*>>& tiles);
+	void onMapScaleChange();
 	//Returns direction from witch player collides with the entitiy relative to the entity
-	static sf::Vector2i Check(Entity& player, Entity& tile);
+	sf::Vector2i Check();
 };
 

@@ -1,17 +1,18 @@
 #include "Entity.h"
 
-Entity::Entity(sf::IntRect spriteFrame, sf::Vector2f hitBox, sf::Texture& texture, Origin_Pos position)
+Entity::Entity(sf::Vector2f hitBox, sf::Texture& texture, sf::IntRect textureRect, Origin_Pos position)
 {
-	this->sprite.setTextureRect(spriteFrame);
+	if (textureRect != sf::IntRect(0, 0, 0, 0))
+		this->sprite.setTextureRect(textureRect);
 
 	switch (position)
 	{
 	case Origin_Pos::BOTTOM | Origin_Pos::CENTER:
-		this->sprite.setOrigin(spriteFrame.width / 2.0f, (float)spriteFrame.height);
+		this->sprite.setOrigin(textureRect.width / 2.0f, (float)textureRect.height);
 		this->hitBox.setOrigin(hitBox.x / 2.0f, hitBox.y);
 		break;
 	case Origin_Pos::CENTER:
-		this->sprite.setOrigin(spriteFrame.width / 2.0f, spriteFrame.height / 2.0f);
+		this->sprite.setOrigin(textureRect.width / 2.0f, textureRect.height / 2.0f);
 		this->hitBox.setOrigin(hitBox.x / 2.0f, hitBox.y / 2.0f);
 		break;
 	}
@@ -44,6 +45,13 @@ void Entity::draw(sf::RenderTarget& target, sf::RenderStates states) const
 		tmp.setFillColor(sf::Color::Cyan);
 		target.draw(tmp);
 	}
+}
+
+void Entity::onWindowResize(sf::Vector2f scale)
+{
+	sf::Vector2f prodCoeff = sf::Vector2f(scale.x / fabs(m_scale.x), scale.y / fabs(m_scale.y));
+	this->setScale((m_scale.x > 0) ? scale.x : -scale.x, scale.y);
+	this->setPosition(this->getPosition().x * prodCoeff.x, this->getPosition().y * prodCoeff.y);
 }
 
 void Entity::move(float x, float y)
@@ -92,6 +100,12 @@ sf::Vector2f Entity::getScale()
 sf::Vector2f Entity::getPosition()
 {
 	return m_position;
+}
+
+void Entity::setHitBox(float x, float y)
+{
+	hitBox.setScale(x / m_actualSize.x, y / m_actualSize.y);
+	m_actualSize = sf::Vector2f(x, y);
 }
 
 sf::Vector2f Entity::getActualBounds()

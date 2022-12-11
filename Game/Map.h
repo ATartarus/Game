@@ -1,7 +1,8 @@
 #pragma once
 #include "stdafx.h"
 #include "Tinyxml2/tinyxml2.h"
-#include "Entity.h"
+#include "Tile.h"
+
 
 class Map : public sf::Drawable
 {
@@ -40,6 +41,7 @@ private:
 	sf::Vector2f m_actualBounds;
 	std::vector<sf::Sprite>* objects;
 	std::vector<BackgroundLayer>* backgroundLayers;
+	sf::Vector2f m_scale;
 private:
 
 	void loadMap(const char* map);
@@ -55,15 +57,15 @@ public:
 	~Map();
 
 	Exit* exit;
-	std::vector<std::vector<Entity*>>* foregroundTiles;
+	std::vector<std::vector<Tile*>>* foregroundTiles;
 	bool hitBoxesVisible;
 	bool originsVisible;
 	bool viewFollow;
 
-
+	sf::Vector2f getScale() const;
 	sf::Vector2f getActualTileSize() const;
 	sf::Vector2f getActualBounds() const;
-	void setResolutionScale(sf::Vector2f scale);
+	void onWindowResize(sf::Vector2f scale);
 	virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const override;
 };
 

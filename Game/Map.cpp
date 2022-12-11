@@ -10,6 +10,7 @@ Map::Map(const char* map)
 	hitBoxesVisible  = false;
 	originsVisible   = false;
 	viewFollow		 = false;
+	m_scale			 = sf::Vector2f(1.0f, 1.0f);
 
 	loadMap(map);
 }
@@ -45,7 +46,6 @@ void Map::deleteBackgroundLayers()
 	}
 	delete backgroundLayers;
 }
-
 
 /*  </Constructors/Destructors>  */
 
@@ -118,7 +118,7 @@ void Map::loadMap(const char* map)
 				std::cout << "MAP::loadMap could not load background image" << "\n";
 			}
 
-			backgroundImage.sprite.setTexture(backgroundImage.texture, true);
+			backgroundImage.sprite.setTexture(backgroundImage.texture);
 			float scale = (findProperty(layer, "scale")) ? findProperty(layer, "scale")->FindAttribute("value")->FloatValue() : 1;
 			backgroundImage.localScale = sf::Vector2f(scale, scale);
 			backgroundImage.sprite.setScale(scale, scale);
@@ -149,8 +149,8 @@ void Map::loadMap(const char* map)
 			else
 			{
 				deleteForegroundTiles();
-				foregroundTiles = new std::vector<std::vector<Entity*>>(layer->FindAttribute("height")->IntValue());
-				for (auto& vec : *foregroundTiles) vec = std::vector<Entity*>(layer->FindAttribute("width")->IntValue());
+				foregroundTiles = new std::vector<std::vector<Tile*>>(layer->FindAttribute("height")->IntValue());
+				for (auto& vec : *foregroundTiles) vec = std::vector<Tile*>(layer->FindAttribute("width")->IntValue());
 				m_actualBounds = sf::Vector2f((*foregroundTiles)[0].size() * tileSheet.tile.x, foregroundTiles->size() * tileSheet.tile.y);
 				loadTiles(csv, false);
 			}
@@ -187,8 +187,16 @@ void Map::loadTiles(std::string& csv, bool background)
 			if (!csvMap[i][j]) continue;
 
 			sf::Vector2f wpos = sf::Vector2f(j * tileSheet.tile.x, i * tileSheet.tile.y);
-			sf::Vector2i spos = sf::Vector2i((csvMap[i][j] % tileSheet.size.x - 1) * (tileSheet.tile.x + tileSheet.spacing.x) + tileSheet.spacing.x,
-											  csvMap[i][j] / tileSheet.size.x * (tileSheet.tile.y + tileSheet.spacing.y) + tileSheet.spacing.y);
+			sf::Vector2i spos;
+
+			int mod = csvMap[i][j] % tileSheet.size.x;
+			int div = csvMap[i][j] / tileSheet.size.x;
+			if (!mod) spos = sf::Vector2i(tileSheet.size.x - 1, div - 1);
+			else	  spos = sf::Vector2i(mod - 1, div);
+
+			spos.x = spos.x * (tileSheet.tile.x + tileSheet.spacing.x) + tileSheet.spacing.x;
+			spos.y = spos.y * (tileSheet.tile.y + tileSheet.spacing.y) + tileSheet.spacing.y;
+
 
 			if (background)
 			{
@@ -199,10 +207,10 @@ void Map::loadTiles(std::string& csv, bool background)
 			}
 			else
 			{
-				Entity* tmp = new Entity(sf::IntRect(spos, tileSheet.tile),
-										 sf::Vector2f(tileSheet.tile.x, tileSheet.tile.y),
-										 tileSheet.texture,
-										 Origin_Pos::CENTER);
+				Tile* tmp = new Tile(sf::Vector2f(tileSheet.tile.x, tileSheet.tile.y),
+									 tileSheet.texture,
+									 sf::IntRect(spos, tileSheet.tile));
+				if (csvMap[i][j] == 31)	tmp->isDamaging = true;
 				tmp->setPosition(wpos.x + tileSheet.tile.x / 2.0f, wpos.y + tileSheet.tile.y / 2.0f);
 				(*foregroundTiles)[i][j] = tmp;
 			}
@@ -305,9 +313,20 @@ bool Map::parseColor(sf::Color& destination, const char* color)
 
 /*  <Accessors>  */
 
+sf::Vector2f Map::getScale() const
+{
+	return m_scale;
+}
+
 sf::Vector2f Map::getActualTileSize() const
 {
-	return (*foregroundTiles)[0][0]->getActualBounds();
+	sf::Vector2f res(0.0f, 0.0f);
+	for (int i = 0; i < foregroundTiles->size() && !res.x; i++) {
+		for (int j = 0; j < (*foregroundTiles)[0].size() && !res.x && (*foregroundTiles)[i][j]; j++) {
+			res = (*foregroundTiles)[i][j]->getActualBounds();
+		}
+	}
+	return res;
 }
 
 sf::Vector2f Map::getActualBounds() const
@@ -323,14 +342,9 @@ sf::Vector2f Map::getActualBounds() const
 
 /*  <Render>  */
 
-void Map::setResolutionScale(sf::Vector2f scale)
+void Map::onWindowResize(sf::Vector2f scale)
 {
-	sf::Vector2f prevScale(0.0f, 0.0f);
-	while (!prevScale.x) {
-		if ((*foregroundTiles)[0][0] == nullptr) continue;
-		prevScale = (*foregroundTiles)[0][0]->getScale();
-	}
-	sf::Vector2f prodCoeff = sf::Vector2f(scale.x / prevScale.x, scale.y / prevScale.y);
+	sf::Vector2f prodCoeff = sf::Vector2f(scale.x / m_scale.x, scale.y / m_scale.y);
 	m_actualBounds.x *= prodCoeff.x;
 	m_actualBounds.y *= prodCoeff.y;
 
@@ -339,8 +353,7 @@ void Map::setResolutionScale(sf::Vector2f scale)
 		for (auto t : vec)
 		{
 			if (t == nullptr) continue;
-			t->setPosition(t->getPosition().x * prodCoeff.x, t->getPosition().y * prodCoeff.y);
-			t->setScale(scale.x, scale.y);
+			t->onWindowResize(scale);
 		}
 	}
 
@@ -363,6 +376,8 @@ void Map::setResolutionScale(sf::Vector2f scale)
 	exit->rect.top = exit->rect.top * prodCoeff.y;
 	exit->rect.width = exit->rect.width * prodCoeff.x;
 	exit->rect.height = exit->rect.height * prodCoeff.y;
+
+	m_scale = scale;
 }
 
 
