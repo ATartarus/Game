@@ -9,6 +9,8 @@ protected:
 	sf::Vector2f m_actualSize;
 	sf::Sprite sprite;
 	sf::RectangleShape hitBox;
+
+	void setHitBox(float x, float y);
 public:
 	/* 
 		hitBox defines size of the entity's hitbox
@@ -31,7 +33,6 @@ public:
 	virtual void setPosition(float x, float y);
 	virtual void setPosition(sf::Vector2f pos);
 	sf::Vector2f getPosition();
-
 	//Returns hitbox bounds according to scale
 	sf::Vector2f getActualBounds();
 

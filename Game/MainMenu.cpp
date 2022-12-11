@@ -1,11 +1,16 @@
 #include "MainMenu.h"
 
 
+/*  <Constructors/Destructors>  */
+
+
 MainMenu::MainMenu(sf::RenderWindow& window, Switch_Flag& flag) : Scene(window, flag)
 {
 	loadTextures();
+	loadSounds();
 	initButtons();
 
+	
 
 	background.setTexture(textures["background"]);
 	background.setScale(window.getSize().x / background.getGlobalBounds().width,
@@ -16,40 +21,58 @@ MainMenu::~MainMenu()
 {
 }
 
-
 void MainMenu::loadTextures()
 {
 	sf::Texture tmp;
-	if (!tmp.loadFromFile("Texture\\mainMenu.png")) {
+	if (!tmp.loadFromFile("Texture\\2.png")) {
 		std::cout << "MainMenu::loadTextures could not load mainMenu.png" << "\n";
-		return;
 	}
 	textures.emplace("background", tmp);
+}
+
+void MainMenu::loadSounds()
+{
+	sf::SoundBuffer tmp;
+	if (!tmp.loadFromFile("Audio\\button.wav")) {
+		std::cout << "MainMenu::loadSounds could not load button.wav" << "\n";
+	}
+	sounds.emplace("button", tmp);
 }
 
 
 void MainMenu::initButtons()
 {
-	if (!font.loadFromFile("Fonts\\arial.ttf")) {
+	if (!font.loadFromFile("Fonts\\ARCADECLASSIC.ttf")) {
 		std::cout << "MainMenu::MainMenu could not load font" << "\n";
 	}
 
 	sf::Vector2f center = sf::Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
 
-	Button* btn = new Button(window, font, sf::Vector2i(150, 40), textures["empty"]);
-	btn->setString("Start");
-	btn->setPosition(center.x - 75, window.getSize().y / 3.0f - 20);
+	Button* btn = new Button(window, font, sf::Vector2i(128, 40), textures["empty"]);
+	btn->setString("Play");
+	btn->setPosition(50.0f, 50.0f);
 	btn->setPressHandler([this] { switchFlag = Switch_Flag::GAME; });
+	btn->setSoundBuffer(sounds["button"]);
 	buttons.push_back(*btn);
 	delete btn;
 
-	btn = new Button(window, font, sf::Vector2i(150, 40), textures["empty"]);
+	btn = new Button(window, font, sf::Vector2i(128, 40), textures["empty"]);
 	btn->setString("Exit");
-	btn->setPosition(center.x - 75, window.getSize().y * (2.0f / 3.0f) - 20);
-	btn->setPressHandler([this] { switchFlag = Switch_Flag::EXIT; e.type = sf::Event::Closed; });
+	btn->setPosition(50.0f, 270.0f);
+	btn->setPressHandler([this] { switchFlag = Switch_Flag::EXIT; });
+	btn->setSoundBuffer(sounds["button"]);
 	buttons.push_back(*btn);
 	delete btn;
 }
+
+
+/*  </Constructors/Destructors>  */
+
+
+/*#################################################################################################################################################*/
+
+
+/*  <Update>  */
 
 
 void MainMenu::updateEvent()
@@ -79,6 +102,16 @@ void MainMenu::update()
 	updateEvent();
 }
 
+
+/*  </Update>  */
+
+
+/*#################################################################################################################################################*/
+
+
+/*  <Render>  */
+
+
 void MainMenu::onWindowResize()
 {
 	Scene::onWindowResize();
@@ -95,3 +128,9 @@ void MainMenu::draw(sf::RenderTarget& target, sf::RenderStates states) const
 		target.draw(btn);
 	}
 }
+
+
+/*  </Render>  */
+
+
+/*#################################################################################################################################################*/

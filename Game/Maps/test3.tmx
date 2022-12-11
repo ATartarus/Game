@@ -93,7 +93,7 @@
  <objectgroup id="2" name="objects">
   <object id="1" class="exit" x="55" y="960" width="5" height="90">
    <properties>
-    <property name="destination" value="test.tmx"/>
+    <property name="destination" value="newtest.tmx"/>
    </properties>
   </object>
  </objectgroup>

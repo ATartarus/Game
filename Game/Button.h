@@ -9,9 +9,12 @@ class Button : public Entity
 private:
 	sf::RenderTarget& window;
 	sf::Text text;
-	unsigned int charSize;
-
+	sf::Sound sound;
+private:
 	std::function<void()> handler;
+	unsigned int charSize;
+	bool leftPressed;
+	bool hovered;
 public:
 	Button(sf::RenderWindow& window, sf::Font& font, sf::Vector2i size, sf::Texture& texture);
 
@@ -24,6 +27,8 @@ public:
 	void setScale(float x, float y) override;
 	void setScale(sf::Vector2f pos) override;
 	void setPressHandler(std::function<void()> handler);
+	void setSoundBuffer(const sf::SoundBuffer& buffer);
+
 
 	void update();
 

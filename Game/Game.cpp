@@ -1,12 +1,14 @@
 #include "Game.h"
 
+
 /*  <Constructors/Destructors>  */
+
 
 Game::Game(sf::RenderWindow& window, Switch_Flag& flag, const float& deltaTime) : Scene(window, flag),
 	deltaTime(deltaTime)
 {
 	loadTextures();
-	map = new Map("test.tmx");
+	map = new Map("newtest.tmx");
 	player = new Player(textures["player"], *map->foregroundTiles, deltaTime);
 	player->setPosition(200.0f, 200.0f);
 	console = new Console();
@@ -54,6 +56,11 @@ void Game::loadTextures()
 	textures.emplace("background", tmp);
 }
 
+void Game::loadSounds()
+{
+
+}
+
 
 /*  </Constructors/Destructors>  */
 
@@ -62,6 +69,7 @@ void Game::loadTextures()
 
 
 /*  <Update methods>  */
+
 
 void Game::update()
 {
@@ -145,28 +153,14 @@ void Game::updateConsole()
 }
 
 
+
 /*  </Update methods>  */
 
 
 /*#################################################################################################################################################*/
 
 
-void Game::onWindowResize()
-{
-	Scene::onWindowResize();
-	resizeContent(m_contentScale);
-
-	if (map->viewFollow) focusView();
-}
-
-
-void Game::resizeContent(sf::Vector2f scale)
-{
-	map->onWindowResize(scale);
-	player->onWindowResize(2.0f * scale);
-	console->onWindowResize(scale);
-	gameOverBackground.setScale(scale);
-}
+/*  <Utility>  */
 
 
 void Game::changeMap()
@@ -203,6 +197,33 @@ void Game::focusView()
 }
 
 
+/*  </Utility>  */
+
+
+/*#################################################################################################################################################*/
+
+
+/*  <Render>  */
+
+
+void Game::onWindowResize()
+{
+	Scene::onWindowResize();
+	resizeContent(m_contentScale);
+
+	if (map->viewFollow) focusView();
+}
+
+
+void Game::resizeContent(sf::Vector2f scale)
+{
+	map->onWindowResize(scale);
+	player->onWindowResize(2.0f * scale);
+	console->onWindowResize(scale);
+	gameOverBackground.setScale(scale);
+}
+
+
 void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	target.draw(*map);
@@ -222,3 +243,9 @@ void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const
 		window.setView(tmp);
 	}
 }
+
+
+/*  </Render>  */
+
+
+/*#################################################################################################################################################*/

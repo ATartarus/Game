@@ -8,6 +8,7 @@ private:
 	sf::Sprite background;
 
 	void loadTextures() override;
+	void loadSounds() override;
 	void initButtons();
 public:
 	MainMenu(sf::RenderWindow& window, Switch_Flag& flag);

@@ -187,8 +187,16 @@ void Map::loadTiles(std::string& csv, bool background)
 			if (!csvMap[i][j]) continue;
 
 			sf::Vector2f wpos = sf::Vector2f(j * tileSheet.tile.x, i * tileSheet.tile.y);
-			sf::Vector2i spos = sf::Vector2i((csvMap[i][j] % tileSheet.size.x - 1) * (tileSheet.tile.x + tileSheet.spacing.x) + tileSheet.spacing.x,
-											  csvMap[i][j] / tileSheet.size.x * (tileSheet.tile.y + tileSheet.spacing.y) + tileSheet.spacing.y);
+			sf::Vector2i spos;
+
+			int mod = csvMap[i][j] % tileSheet.size.x;
+			int div = csvMap[i][j] / tileSheet.size.x;
+			if (!mod) spos = sf::Vector2i(tileSheet.size.x - 1, div - 1);
+			else	  spos = sf::Vector2i(mod - 1, div);
+
+			spos.x = spos.x * (tileSheet.tile.x + tileSheet.spacing.x) + tileSheet.spacing.x;
+			spos.y = spos.y * (tileSheet.tile.y + tileSheet.spacing.y) + tileSheet.spacing.y;
+
 
 			if (background)
 			{
@@ -312,7 +320,13 @@ sf::Vector2f Map::getScale() const
 
 sf::Vector2f Map::getActualTileSize() const
 {
-	return (*foregroundTiles)[0][0]->getActualBounds();
+	sf::Vector2f res(0.0f, 0.0f);
+	for (int i = 0; i < foregroundTiles->size() && !res.x; i++) {
+		for (int j = 0; j < (*foregroundTiles)[0].size() && !res.x && (*foregroundTiles)[i][j]; j++) {
+			res = (*foregroundTiles)[i][j]->getActualBounds();
+		}
+	}
+	return res;
 }
 
 sf::Vector2f Map::getActualBounds() const

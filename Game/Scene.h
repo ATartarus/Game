@@ -5,21 +5,29 @@
 class Scene : public sf::Drawable
 {
 protected:
+
 	sf::RenderWindow& window;
 	sf::Event e;
-	Switch_Flag& switchFlag;
-	sf::Font font;
-
-	sf::Vector2f m_contentScale;
-	std::map<std::string, sf::Texture> textures;
-	std::vector<Button> buttons;
-
 	struct Resolution {
 		const sf::Vector2f _default = sf::Vector2f(960.0f, 540.0f);
 		const sf::Vector2f fullScreen = sf::Vector2f(1920.0f, 1080.0f);
 	} resolution;
 
+protected:
+
+	std::map<std::string, sf::Texture> textures;
+	std::map<std::string, sf::SoundBuffer> sounds;
+	std::vector<Button> buttons;
+
+protected:
+
+	Switch_Flag& switchFlag;
+	sf::Vector2f m_contentScale;
+	sf::Font font;
+
+
 	virtual void loadTextures() = 0;
+	virtual void loadSounds() = 0;
 public:
 	Scene(sf::RenderWindow& window, Switch_Flag& flag);
 	virtual ~Scene() = 0 {};

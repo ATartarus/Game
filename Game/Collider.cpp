@@ -4,7 +4,12 @@
 Collider::Collider(Creature& creature, std::vector<std::vector<Tile*>>& tiles) :
 	creature(&creature), tiles(&tiles) 
 {
-	tileSize = tiles[0][0]->getActualBounds();
+	tileSize = sf::Vector2f(0.0f, 0.0f);
+	for (int i = 0; i < this->tiles->size() && !tileSize.x; i++) {
+		for (int j = 0; j < (*this->tiles)[0].size() && !tileSize.x && (*this->tiles)[i][j]; j++) {
+			tileSize = (*this->tiles)[i][j]->getActualBounds();
+		}
+	}
 }
 
 void Collider::mapChange(std::vector<std::vector<Tile*>>& tile)
@@ -15,7 +20,12 @@ void Collider::mapChange(std::vector<std::vector<Tile*>>& tile)
 
 void Collider::onMapScaleChange()
 {
-	tileSize = (*tiles)[0][0]->getActualBounds();
+	tileSize = sf::Vector2f(0.0f, 0.0f);
+	for (int i = 0; i < this->tiles->size() && !tileSize.x; i++) {
+		for (int j = 0; j < (*this->tiles)[0].size() && !tileSize.x && (*this->tiles)[i][j]; j++) {
+			tileSize = (*this->tiles)[i][j]->getActualBounds();
+		}
+	}
 }
 
 sf::Vector2i Collider::Check()

@@ -21,6 +21,7 @@ private:
 	void resizeContent(sf::Vector2f scale);
 
 	void loadTextures() override;
+	void loadSounds() override;
 public:
 	Game(sf::RenderWindow& window, Switch_Flag& flag, const float& deltaTime);
 	~Game();

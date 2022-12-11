@@ -46,8 +46,9 @@ void Controller::update()
 
 void Controller::switchWindow()
 {
-	delete currentWindow;
+	if (switchFlag == Switch_Flag::EXIT) return;
 
+	delete currentWindow;
 
 	if (switchFlag == Switch_Flag::GAME)
 	{

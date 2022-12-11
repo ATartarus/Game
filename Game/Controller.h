@@ -9,7 +9,6 @@
 class Controller
 {
 private:
-	//Window
 	sf::RenderWindow window;
 	float deltaTime;
 
@@ -22,15 +21,12 @@ public:
 	Controller();
 	~Controller();
 
-	//Accessors
-
 	const sf::RenderWindow& getWindow() const;
 	const float getDeltaTime() const;
 	void setDeltaTime(const float deltaTime);
 
 
 	void update();
-
 	void render();
 };
 

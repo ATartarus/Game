@@ -102,6 +102,12 @@ sf::Vector2f Entity::getPosition()
 	return m_position;
 }
 
+void Entity::setHitBox(float x, float y)
+{
+	hitBox.setScale(x / m_actualSize.x, y / m_actualSize.y);
+	m_actualSize = sf::Vector2f(x, y);
+}
+
 sf::Vector2f Entity::getActualBounds()
 {
 	return m_actualSize;
