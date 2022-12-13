@@ -11,6 +11,7 @@ class Controller
 private:
 	sf::RenderWindow window;
 	float deltaTime;
+	float globalVolume;
 
 	Scene* currentWindow;
 	Switch_Flag switchFlag;

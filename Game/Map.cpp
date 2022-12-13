@@ -208,9 +208,9 @@ void Map::loadTiles(std::string& csv, bool background)
 			else
 			{
 				Tile* tmp = new Tile(sf::Vector2f(tileSheet.tile.x, tileSheet.tile.y),
-									 tileSheet.texture,
+									 &tileSheet.texture,
 									 sf::IntRect(spos, tileSheet.tile));
-				if (csvMap[i][j] == 31)	tmp->isDamaging = true;
+				if (csvMap[i][j] == 22)	tmp->isDamaging = true;
 				tmp->setPosition(wpos.x + tileSheet.tile.x / 2.0f, wpos.y + tileSheet.tile.y / 2.0f);
 				(*foregroundTiles)[i][j] = tmp;
 			}
@@ -372,10 +372,14 @@ void Map::onWindowResize(sf::Vector2f scale)
 	backgroundImage.sprite.setScale(backgroundImage.localScale.x * scale.x, backgroundImage.localScale.y * scale.y);
 	backgroundImage.sprite.setPosition(backgroundImage.sprite.getPosition().x * prodCoeff.x, backgroundImage.sprite.getPosition().y * prodCoeff.y);
 
-	exit->rect.left = exit->rect.left * prodCoeff.x;
-	exit->rect.top = exit->rect.top * prodCoeff.y;
-	exit->rect.width = exit->rect.width * prodCoeff.x;
-	exit->rect.height = exit->rect.height * prodCoeff.y;
+	if (exit)
+	{
+		exit->rect.left = exit->rect.left * prodCoeff.x;
+		exit->rect.top = exit->rect.top * prodCoeff.y;
+		exit->rect.width = exit->rect.width * prodCoeff.x;
+		exit->rect.height = exit->rect.height * prodCoeff.y;
+	}
+
 
 	m_scale = scale;
 }
@@ -399,9 +403,9 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 	
 	int Y1 = static_cast<int>((target.getView().getCenter().y - target.getView().getSize().y / 2.0f) / getActualTileSize().y);
-	int Y2 = static_cast<int>(Y1 + target.getSize().y / getActualTileSize().y + 1);
+	int Y2 = static_cast<int>(Y1 + target.getSize().y / getActualTileSize().y + 2);
 	int X1 = static_cast<int>((target.getView().getCenter().x - target.getView().getSize().x / 2.0f) / getActualTileSize().x);
-	int X2 = static_cast<int>(X1 + target.getSize().x / getActualTileSize().x + 1);
+	int X2 = static_cast<int>(X1 + target.getSize().x / getActualTileSize().x + 2);
 
 	if (Y1 < 0) Y1 = 0;
 	if (Y2 > foregroundTiles->size()) Y2 = static_cast<int>(foregroundTiles->size());
@@ -435,7 +439,7 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 
 
-	if (hitBoxesVisible)
+	if (hitBoxesVisible && exit)
 	{
 		sf::RectangleShape tmp(exit->rect.getSize());
 		tmp.setPosition(exit->rect.getPosition());

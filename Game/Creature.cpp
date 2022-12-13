@@ -2,7 +2,7 @@
 
 
 Creature::Creature(sf::Vector2f hitBox,
-				   sf::Texture& texture,
+				   sf::Texture* texture,
 				   sf::IntRect textureRect,
 				   std::vector<std::vector<Tile*>>& tiles,
 				   const float& deltaTime
@@ -80,6 +80,9 @@ void Creature::onDamageRecieve()
 	{
 		stagger.restart();
 		m_health -= 1.0f;
+
+
+
 		if (m_health <= 0) isAlive = false;
 	}
 }

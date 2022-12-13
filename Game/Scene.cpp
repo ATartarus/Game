@@ -16,7 +16,7 @@ void Scene::onWindowResize()
 	{
 		window.create(sf::VideoMode(resolution._default.x, resolution._default.y), "Game", sf::Style::Close);
 	}
-	else
+	else 
 	{
 		window.create(sf::VideoMode(resolution.fullScreen.x, resolution.fullScreen.y), "Game", sf::Style::Fullscreen);
 	}

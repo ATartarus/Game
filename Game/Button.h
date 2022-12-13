@@ -7,16 +7,16 @@ class MainMenu;
 class Button : public Entity
 {
 private:
-	sf::RenderTarget& window;
+	const sf::RenderTarget& window;
 	sf::Text text;
 	sf::Sound sound;
 private:
-	std::function<void()> handler;
+	std::function<void()> pressHandler;
 	unsigned int charSize;
 	bool leftPressed;
 	bool hovered;
 public:
-	Button(sf::RenderWindow& window, sf::Font& font, sf::Vector2i size, sf::Texture& texture);
+	Button(const sf::RenderWindow& window, sf::Font& font, sf::Vector2i size, sf::Texture* texture);
 
 
 	void setCharacterSize(unsigned int size);
@@ -25,10 +25,10 @@ public:
 	void setPosition(float x, float y) override;
 	void setPosition(sf::Vector2f pos) override;
 	void setScale(float x, float y) override;
-	void setScale(sf::Vector2f pos) override;
+	void setScale(sf::Vector2f scale) override;
 	void setPressHandler(std::function<void()> handler);
 	void setSoundBuffer(const sf::SoundBuffer& buffer);
-
+	void setSoundVolume(const float vol);
 
 	void update();
 

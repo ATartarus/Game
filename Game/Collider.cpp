@@ -35,17 +35,21 @@ sf::Vector2i Collider::Check()
 	int X1 = static_cast<int>((creature->getPosition().x - creature->getActualBounds().x / 2.0f) / tileSize.x);
 	int X2 = static_cast<int>(X1 + creature->getActualBounds().x / tileSize.x + 1);
 	if (Y1 < 0) Y1 = 0;
-	if (Y2 > tiles->size()) Y2 = static_cast<int>(tiles->size());
+	if (Y2 >= tiles->size()) Y2 = static_cast<int>(tiles->size()) - 1;
 	if (X1 < 0) X1 = 0;
-	if (X2 > (*tiles)[0].size()) X2 = static_cast<int>(tiles[0].size());
+	if (X2 >= (*tiles)[0].size()) X2 = static_cast<int>(tiles[0].size()) - 1;
 
 	sf::Vector2i direction(0, 0);
 
-	for (int i = Y1; i < Y2; i++) {
-		for (int j = X1; j < X2; j++) {
+	for (int i = Y1; i <= Y2; i++) {
+		for (int j = X1; j <= X2; j++) {
 			if ((*tiles)[i][j] == nullptr) continue;
 			calculate(*(*tiles)[i][j], direction);
-			if ((*tiles)[i][j]->isDamaging) creature->onDamageRecieve();
+			if ((*tiles)[i][j]->isDamaging && (direction.x != 0 || direction.y != 0))
+			{
+				creature->onDamageRecieve();
+				direction.x = 0; direction.y = 0;
+			}
 		}
 	}
 
@@ -61,19 +65,20 @@ void Collider::calculate(Tile& tile, sf::Vector2i& direction)
 											 fabs(delta.y) - tile.getActualBounds().y / 2.0f);
 
 
+	sf::Vector2f shift(0.0f, 0.0f);
 
-	if (intersection.x < 0 && intersection.y < 0 && (fabs(intersection.x - intersection.y) > tile.getActualBounds().y / 30.0f))
+	if (intersection.x < 0 && intersection.y < 0 && (fabs(intersection.x - intersection.y) > 2.5f))
 	{
 		if (intersection.x > intersection.y)
 		{
 			if (delta.x > 0)
 			{
-				creature->move(fabs(intersection.x), 0.0f);
+				shift.x = fabs(intersection.x);
 				direction.x = -1;
 			}
 			else
 			{
-				creature->move(intersection.x, 0.0f);
+				shift.x = intersection.x;
 				direction.x = 1;
 			}
 		}
@@ -81,15 +86,15 @@ void Collider::calculate(Tile& tile, sf::Vector2i& direction)
 		{
 			if (delta.y > 0)
 			{
-				creature->move(0.0f, fabs(intersection.y));
+				shift.y = fabs(intersection.y);
 				direction.y = -1;
 			}
 			else
 			{
-				creature->move(0.0f, intersection.y);
+				shift.y = intersection.y;
 				direction.y = 1;
 			}
 		}
+		if (!tile.isDamaging) creature->move(shift);
 	}
-
 }

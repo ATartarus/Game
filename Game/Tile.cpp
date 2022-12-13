@@ -1,6 +1,6 @@
 #include "Tile.h"
 
-Tile::Tile(sf::Vector2f hitBox, sf::Texture& texture, sf::IntRect textureRect) : Entity(
+Tile::Tile(sf::Vector2f hitBox, sf::Texture* texture, sf::IntRect textureRect) : Entity(
 	hitBox, texture, textureRect, Origin_Pos::CENTER), isDamaging(false)
 {
 }

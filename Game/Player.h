@@ -8,7 +8,7 @@ private:
 	void updateMovement();
 	void initVariables() override;
 public:
-	Player(sf::Texture& texture, std::vector<std::vector<Tile*>>& tiles, const float& deltaTime);
+	Player(sf::Texture* texture, std::vector<std::vector<Tile*>>& tiles, const float& deltaTime);
 	~Player();
 
 	void update() override;

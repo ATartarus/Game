@@ -5,7 +5,7 @@
 /*  <Constructors/Destructors>  */
 
 
-Button::Button(sf::RenderWindow& window, sf::Font& font, sf::Vector2i size, sf::Texture& texture) : Entity(
+Button::Button(const sf::RenderWindow& window, sf::Font& font, sf::Vector2i size, sf::Texture* texture) : Entity(
 	sf::Vector2f(size), texture), window(window)
 {
 	sprite.setTextureRect(sf::IntRect(sf::Vector2i(0, 0), size));
@@ -61,19 +61,24 @@ void Button::setScale(float x, float y)
 	Entity::setScale(x, y);
 }
 
-void Button::setScale(sf::Vector2f pos)
+void Button::setScale(sf::Vector2f scale)
 {
-	setScale(pos.x, pos.y);
+	setScale(scale.x, scale.y);
 }
 
 void Button::setPressHandler(std::function<void()> handler)
 {
-	this->handler = handler;
+	this->pressHandler = handler;
 }
 
 void Button::setSoundBuffer(const sf::SoundBuffer& buffer)
 {
 	sound.setBuffer(buffer);
+}
+
+void Button::setSoundVolume(const float vol)
+{
+	sound.setVolume(vol);
 }
 
 
@@ -90,7 +95,7 @@ void Button::update()
 {
 	text.setCharacterSize(charSize);
 	text.setOutlineColor(sf::Color::Transparent);
-	sf::Vector2i mousePos = sf::Mouse::getPosition(dynamic_cast<sf::Window&>(window));
+	sf::Vector2i mousePos = sf::Mouse::getPosition(dynamic_cast<const sf::Window&>(window));
 	if (mousePos.x < m_position.x || mousePos.x > m_position.x + m_actualSize.x) { hovered = false; leftPressed = false; return; }
 	if (mousePos.y < m_position.y || mousePos.y > m_position.y + m_actualSize.y) { hovered = false; leftPressed = false; return; }
 
@@ -98,7 +103,10 @@ void Button::update()
 	text.setOutlineColor(sf::Color::Color(128, 128, 128));
 	if (!hovered) sound.play();
 	if (sf::Mouse::isButtonPressed(sf::Mouse::Left)) leftPressed = true;
-	if (leftPressed && !sf::Mouse::isButtonPressed(sf::Mouse::Left)) handler();
+	if (leftPressed && !sf::Mouse::isButtonPressed(sf::Mouse::Left)) {
+		leftPressed = false;
+		pressHandler();
+	}
 
 	hovered = true;
 }

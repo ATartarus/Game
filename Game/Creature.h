@@ -34,7 +34,7 @@ protected:
 	void moveJump();
 public:
 	Creature(sf::Vector2f hitBox,
-			 sf::Texture& texture,
+			 sf::Texture* texture,
 		 	 sf::IntRect textureRect,
 			 std::vector<std::vector<Tile*>>& tiles, 
 			 const float& deltaTime

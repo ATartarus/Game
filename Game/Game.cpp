@@ -8,9 +8,9 @@ Game::Game(sf::RenderWindow& window, Switch_Flag& flag, const float& deltaTime) 
 	deltaTime(deltaTime)
 {
 	loadTextures();
-	map = new Map("newtest.tmx");
-	player = new Player(textures["player"], *map->foregroundTiles, deltaTime);
-	player->setPosition(200.0f, 200.0f);
+	map = new Map("test.tmx");
+	player = new Player(&textures["player"], *map->foregroundTiles, deltaTime);
+	player->setPosition(100.0f, 100.0f);
 	console = new Console();
 
 
@@ -110,10 +110,6 @@ void Game::updateEvent()
 			map->originsVisible = !map->originsVisible;
 			player->showOrigin = !player->showOrigin;
 		}
-		if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::F3)
-		{
-			onWindowResize();
-		}
 		if (e.type == sf::Event::KeyPressed && e.key.code == sf::Keyboard::Escape)
 		{
 			switchFlag = Switch_Flag::MAIN_MENU;
@@ -134,12 +130,14 @@ void Game::updateView()
 		player->getPosition().x - window.getSize().x / 2.0f > 0.0f)
 	{
 		shift.x = player->getPosition().x - window.getView().getCenter().x;
+		shift.x = (fabs(shift.x) < 1.0f) ? 0 : std::roundf(shift.x);
 	}
 
 	if (player->getPosition().y + window.getSize().y / 2.0f < map->getActualBounds().y &&
 		player->getPosition().y - window.getSize().y / 2.0f > 0.0f)
 	{
 		shift.y = player->getPosition().y - window.getView().getCenter().y;
+		shift.y = (fabs(shift.y) < 1.0f) ? 0 : std::roundf(shift.y);
 	}
 
 	window.setView(sf::View(sf::Vector2f(shift.x + window.getView().getCenter().x, shift.y + window.getView().getCenter().y), sf::Vector2f(window.getSize())));
@@ -218,7 +216,7 @@ void Game::onWindowResize()
 void Game::resizeContent(sf::Vector2f scale)
 {
 	map->onWindowResize(scale);
-	player->onWindowResize(2.0f * scale);
+	player->onWindowResize(scale);
 	console->onWindowResize(scale);
 	gameOverBackground.setScale(scale);
 }

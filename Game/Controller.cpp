@@ -1,15 +1,18 @@
 #include "Controller.h"
 
 
-//Cons/Dest
+/*  <Constructors/Destructors>  */
 
 
 Controller::Controller()
 {
-	window.create(sf::VideoMode(960, 540), "Game", sf::Style::Close);
-	currentWindow = new MainMenu(window, switchFlag);
-	switchFlag = Switch_Flag::IDLE;
+	globalVolume = 100.0f;
 	deltaTime = 0.0f;
+	switchFlag = Switch_Flag::IDLE;
+
+
+	window.create(sf::VideoMode(960, 540), "Game", sf::Style::Close);
+	currentWindow = new MainMenu(window, switchFlag, globalVolume);
 }
 
 Controller::~Controller()
@@ -17,7 +20,14 @@ Controller::~Controller()
 	delete currentWindow;
 }
 
-//Accessors
+
+/*  </Constructors/Destructors>  */
+
+
+/*#################################################################################################################################################*/
+
+
+/*  <Accessors>  */
 
 const sf::RenderWindow& Controller::getWindow() const
 {
@@ -35,7 +45,15 @@ void Controller::setDeltaTime(const float deltaTime)
 }
 
 
-//Update
+
+/*  </Accessors>  */
+
+
+/*#################################################################################################################################################*/
+
+
+/*  <Update>  */
+
 
 void Controller::update()
 {
@@ -57,13 +75,21 @@ void Controller::switchWindow()
 	else if (switchFlag == Switch_Flag::MAIN_MENU)
 	{
 		window.setView(window.getDefaultView());
-		currentWindow = new MainMenu(window, switchFlag);
+		currentWindow = new MainMenu(window, switchFlag, globalVolume);
 	}
 
 	switchFlag = Switch_Flag::IDLE;
 }
 
-//Render
+
+/*  </Update>  */
+
+
+/*#################################################################################################################################################*/
+
+
+/*  <Render>  */
+
 
 void Controller::render()
 {
@@ -73,3 +99,6 @@ void Controller::render()
 
 	window.display();
 }
+
+
+/*  </Render>  */

@@ -17,6 +17,7 @@ protected:
 
 	std::map<std::string, sf::Texture> textures;
 	std::map<std::string, sf::SoundBuffer> sounds;
+	std::map<std::string, sf::Text> labels;
 	std::vector<Button> buttons;
 
 protected:

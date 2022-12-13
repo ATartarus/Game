@@ -85,6 +85,9 @@
     <ClCompile Include="Button.cpp">
       <Filter>Entity tree\Source</Filter>
     </ClCompile>
+    <ClCompile Include="Slider.cpp">
+      <Filter>Entity tree\Source</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Tinyxml2\tinyxml2.h">
@@ -133,6 +136,9 @@
       <Filter>Other\Header</Filter>
     </ClInclude>
     <ClInclude Include="Button.h">
+      <Filter>Entity tree\Header</Filter>
+    </ClInclude>
+    <ClInclude Include="Slider.h">
       <Filter>Entity tree\Header</Filter>
     </ClInclude>
   </ItemGroup>

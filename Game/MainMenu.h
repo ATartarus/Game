@@ -1,17 +1,22 @@
 #pragma once
 #include "Scene.h"
-
+#include "Slider.h"
 
 class MainMenu : public Scene
 {
 private:
 	sf::Sprite background;
+	std::vector<Slider> sliders;
+	bool isInOptions;
+	float& globalVolume;
 
 	void loadTextures() override;
 	void loadSounds() override;
-	void initButtons();
+	void initMainMenu();
+	void initOptionsMenu();
+	void resizeContent();
 public:
-	MainMenu(sf::RenderWindow& window, Switch_Flag& flag);
+	MainMenu(sf::RenderWindow& window, Switch_Flag& flag, float& globalVolume);
 	~MainMenu();
 
 

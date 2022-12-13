@@ -3,7 +3,7 @@
 
 //Initialization
 
-Player::Player(sf::Texture& texture, std::vector<std::vector<Tile*>>& tiles, const float& deltaTime) : 
+Player::Player(sf::Texture* texture, std::vector<std::vector<Tile*>>& tiles, const float& deltaTime) : 
 	    Creature(
 			   sf::Vector2f(15.0f, 42.0f),
 			   texture,
@@ -12,7 +12,7 @@ Player::Player(sf::Texture& texture, std::vector<std::vector<Tile*>>& tiles, con
 			   deltaTime)
 {
 	initVariables();
-	this->setScale(2.0f, 2.0f);
+	//this->setScale(2.0f, 2.0f);
 }
 
 Player::~Player()
@@ -63,6 +63,8 @@ void Player::updateMovement()
 		if (fabs(velocity.x) < deceleration) velocity.x = 0;
 	}
 
+	if (stagger.getElapsedTime().asSeconds() < staggerTime / 2.0f) velocity.x = 0.0f;
+
 	/*  </Velocity.x calculations>  */
 
 
@@ -78,7 +80,8 @@ void Player::updateMovement()
 	}
 	
 	if (velocity.y < 0) 		moveState = Move_State::JUMPING;
-	else if (velocity.y > 0)	moveState = Move_State::FALLING;
+	else if (velocity.y > 0)	
+		moveState = Move_State::FALLING;
 	velocity.y += acceleration.y * deltaTime;
 
 
