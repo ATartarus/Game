@@ -18,6 +18,8 @@ protected:
 	bool staggered;
 
 	sf::Sound injury;
+	sf::Sound step;
+	sf::Clock stepDelay;
 
 	sf::Vector2f velocity;
 	sf::Vector2f acceleration;
@@ -48,9 +50,11 @@ public:
 
 	bool isAlive;
 
+	
 	unsigned int getHP();
-	void setSoundBuffer(sf::SoundBuffer& buffer);
-	void setVolume(float vol);
+	void setInjuryBuffer(sf::SoundBuffer& buffer);
+	void setStepBuffer(sf::SoundBuffer& buffer);
+	void setVolume(float vol); 
 
 	virtual void update() = 0;
 

@@ -6,7 +6,8 @@ Collider::Collider(Creature& creature, std::vector<std::vector<Tile*>>& tiles) :
 {
 	tileSize = sf::Vector2f(0.0f, 0.0f);
 	for (int i = 0; i < this->tiles->size() && !tileSize.x; i++) {
-		for (int j = 0; j < (*this->tiles)[0].size() && !tileSize.x && (*this->tiles)[i][j]; j++) {
+		for (int j = 0; j < (*this->tiles)[0].size() && !tileSize.x; j++) {
+			if ((*this->tiles)[i][j] == nullptr) continue;
 			tileSize = (*this->tiles)[i][j]->getActualBounds();
 		}
 	}
@@ -24,7 +25,8 @@ void Collider::onMapScaleChange()
 {
 	tileSize = sf::Vector2f(0.0f, 0.0f);
 	for (int i = 0; i < this->tiles->size() && !tileSize.x; i++) {
-		for (int j = 0; j < (*this->tiles)[0].size() && !tileSize.x && (*this->tiles)[i][j]; j++) {
+		for (int j = 0; j < (*this->tiles)[0].size() && !tileSize.x; j++) {
+			if ((*this->tiles)[i][j] == nullptr) continue;
 			tileSize = (*this->tiles)[i][j]->getActualBounds();
 		}
 	}
@@ -41,7 +43,7 @@ sf::Vector2i Collider::Check()
 	if (Y1 < 0) Y1 = 0;
 	if (Y2 >= tiles->size()) Y2 = static_cast<int>(tiles->size()) - 1;
 	if (X1 < 0) X1 = 0;
-	if (X2 >= (*tiles)[0].size()) X2 = static_cast<int>(tiles[0].size()) - 1;
+	if (X2 >= (*tiles)[0].size()) X2 = static_cast<int>((*tiles)[0].size()) - 1;
 
 	sf::Vector2i* tmpDir = new sf::Vector2i(0, 0);
 	for (int i = Y1; i <= Y2; i++) {

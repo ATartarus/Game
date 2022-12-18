@@ -29,14 +29,6 @@ private:
 		sf::Color tintColor;
 	};
 
-	struct Exit {
-		sf::FloatRect rect;
-		const std::string nextMap;
-
-		Exit(int x, int y, float width, float height, std::string nextMap) :
-			rect(x, y, width, height), nextMap(nextMap) {};
-	};
-
 private:
 	sf::Vector2f m_actualBounds;
 	std::vector<sf::Sprite>* objects;
@@ -55,8 +47,17 @@ private:
 public:
 	Map(const char* map);
 	~Map();
+	const std::string name;
 
-	Exit* exit;
+	struct Exit {
+		sf::FloatRect rect;
+		const std::string nextMap;
+
+		Exit(int x, int y, float width, float height, std::string nextMap) :
+			rect(x, y, width, height), nextMap(nextMap) {};
+	};
+	std::vector<Exit>* exits;
+
 	std::vector<std::vector<Tile*>>* foregroundTiles;
 	bool hitBoxesVisible;
 	bool originsVisible;

@@ -13,10 +13,12 @@ private:
 	const float& deltaTime;
 
 	sf::Sprite gameOverBackground;
+	sf::Sprite victoryBackground;
+	bool end;
 
 	std::vector<sf::Sprite> hearts;
 
-	void changeMap();
+	void changeMap(Map::Exit& exit);
 	void focusView();
 	void updateView();
 	void updateConsole();

@@ -60,6 +60,7 @@ void Creature::yCollisionCheck(sf::Vector2i& direction)
 {
 	if (direction.y != 0) {
 		if (direction.y == 1 && velocity.y > 0) {		//Hitting tile from top
+			if (velocity.y > m_scale.y * 10.0f) { step.play(); stepDelay.restart(); }
 			velocity.y = 0;
 			if (!jump.keyHold) jump.allow = true;
 		}
@@ -92,14 +93,20 @@ void Creature::onDamageRecieve()
 	else staggered = false;
 }
 
-void Creature::setSoundBuffer(sf::SoundBuffer& buffer)
+void Creature::setInjuryBuffer(sf::SoundBuffer& buffer)
 {
 	injury.setBuffer(buffer);
+}
+
+void Creature::setStepBuffer(sf::SoundBuffer& buffer)
+{
+	step.setBuffer(buffer);
 }
 
 void Creature::setVolume(float vol)
 {
 	injury.setVolume(vol);
+	step.setVolume(vol);
 }
 
 void Creature::onWindowResize(sf::Vector2f scale)
@@ -110,7 +117,7 @@ void Creature::onWindowResize(sf::Vector2f scale)
 	velocityMax *= prodCoeff.x;
 	acceleration *= prodCoeff.x;
 	deceleration.x *= prodCoeff.x;
-	deceleration.y *= fabs(m_scale.x) / scale.x;
+	deceleration.y *= fabs(m_scale.x) / scale.x / 2.0f;
 	g *= prodCoeff.y;
 	jump.height *= prodCoeff.y;
 	collider->onMapScaleChange();

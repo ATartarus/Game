@@ -11,19 +11,22 @@ Game::Game(sf::RenderWindow& window, Switch_Flag& flag, float globalVolume, cons
 	loadSounds();
 	map = new Map("test.tmx");
 	player = new Player(&textures["player"], *map->foregroundTiles, deltaTime);
-	player->setPosition(100.0f, 100.0f);
-	player->setSoundBuffer(sounds["injury"]);
+	player->setPosition(80.0f, 500.0f);
+	player->setInjuryBuffer(sounds["injury"]);
+	player->setStepBuffer(sounds["step"]);
 	player->setVolume(globalVolume);
 	console = new Console();
 
 
-	gameOverBackground.setTexture(textures["background"]);
+	gameOverBackground.setTexture(textures["deathBackground"]);
 	gameOverBackground.setScale(window.getSize().x / gameOverBackground.getGlobalBounds().width,
 								window.getSize().y / gameOverBackground.getGlobalBounds().height);
-	gameOverBackground.setColor(sf::Color(255, 0, 0, 155));
 
 
-	
+	victoryBackground.setTexture(textures["victoryBackground"]);
+	victoryBackground.setScale(window.getSize().x / gameOverBackground.getGlobalBounds().width,
+		window.getSize().y / gameOverBackground.getGlobalBounds().height);
+
 
 
 	sf::Vector2f scale = sf::Vector2f(window.getSize()) / resolution._default;
@@ -32,6 +35,8 @@ Game::Game(sf::RenderWindow& window, Switch_Flag& flag, float globalVolume, cons
 		m_contentScale = scale;
 		resizeContent(m_contentScale);
 	}
+
+	end = false;
 }
 
 
@@ -49,7 +54,6 @@ void Game::loadTextures()
 
 	if (!tmp.loadFromFile("Texture\\player_sheet.png")) {
 		std::cout << "Game::loadTextures could not load player_sheet.png" << "\n";
-		return;
 	}
 
 	textures.emplace("player", tmp);
@@ -57,15 +61,20 @@ void Game::loadTextures()
 
 	if (!tmp.loadFromFile("Texture\\deathScreen.png")) {
 		std::cout << "Game::loadTextures could not load deathScreen.png" << "\n";
-		return;
 	}
 
-	textures.emplace("background", tmp);
+	textures.emplace("deathBackground", tmp);
+
+
+	if (!tmp.loadFromFile("Texture\\victoryScreen.png")) {
+		std::cout << "Game::loadTextures could not load victoryScreen.png" << "\n";
+	}
+
+	textures.emplace("victoryBackground", tmp);
 
 
 	if (!tmp.loadFromFile("Texture\\heart.png")) {
 		std::cout << "Game::loadTextures could not load heart.png" << "\n";
-		return;
 	}
 
 	textures.emplace("heart", tmp);
@@ -78,6 +87,12 @@ void Game::loadSounds()
 		std::cout << "MainMenu::loadSounds could not load injury.wav" << "\n";
 	}
 	sounds.emplace("injury", tmp);
+
+
+	if (!tmp.loadFromFile("Audio\\step.wav")) {
+		std::cout << "MainMenu::loadSounds could not load step.wav" << "\n";
+	}
+	sounds.emplace("step", tmp);
 }
 
 
@@ -93,8 +108,9 @@ void Game::loadSounds()
 void Game::update()
 {
 	console->clearOutput();
-
 	updateEvent();
+
+	if (end) return;
 
 	if (player->isAlive)
 	{
@@ -102,11 +118,16 @@ void Game::update()
 		updateHearts();
 	}
 
-	if (map->exit != nullptr &&
-		(player->getPosition().x >= map->exit->rect.left && player->getPosition().x <= map->exit->rect.left + map->exit->rect.width) &&
-		(player->getPosition().y >= map->exit->rect.top && player->getPosition().y <= map->exit->rect.top + map->exit->rect.height))
-	{
-		changeMap();
+	if (map->exits) {
+		for (auto& exit : *map->exits) {
+			if ((player->getPosition().x >= exit.rect.left && player->getPosition().x <= exit.rect.left + exit.rect.width) &&
+				(player->getPosition().y >= exit.rect.top && player->getPosition().y <= exit.rect.top + exit.rect.height))
+			{
+				if (exit.nextMap == "end") { end = true; return; }
+				changeMap(exit);
+				break;
+			}
+		}
 	}
 
 	if (map->viewFollow) updateView();
@@ -196,18 +217,29 @@ void Game::updateHearts()
 /*  <Utility>  */
 
 
-void Game::changeMap()
+void Game::changeMap(Map::Exit& exit)
 {
 	window.setView(window.getDefaultView());
-	std::string nextMap = map->exit->nextMap;
+	std::string nextMap = exit.nextMap;
+	std::string prevMap = map->name;
 
 	delete map;
 	map = new Map(nextMap.c_str());
+
+	Map::Exit* dest = nullptr;
+	for (auto& ex : *map->exits) {
+		if (ex.nextMap == prevMap) {
+			dest = &ex;
+			break;
+		}
+	}
+	if (!dest) return;
+
 	map->onWindowResize(sf::Vector2f(window.getSize().x / resolution._default.x, window.getSize().y / resolution._default.y));
-	player->setPosition((player->getPosition().x > map->exit->rect.left) ?
-		map->exit->rect.left + map->exit->rect.width + 5.0f :
-		map->exit->rect.left - 5.0f,
-		map->exit->rect.top + map->exit->rect.height);
+	player->setPosition((player->getPosition().x > dest->rect.left) ?
+		dest->rect.left + dest->rect.width + 5.0f :
+		dest->rect.left - 5.0f,
+		dest->rect.top + dest->rect.height / 2.0f);
 	player->showHitBox = false;
 	player->showOrigin = false;
 	player->collider->mapChange(*map->foregroundTiles);
@@ -254,6 +286,7 @@ void Game::resizeContent(sf::Vector2f scale)
 	player->onWindowResize(scale);
 	console->onWindowResize(scale);
 	gameOverBackground.setScale(scale);
+	victoryBackground.setScale(scale);
 }
 
 
@@ -261,6 +294,13 @@ void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	target.draw(*map);
 	target.draw(*player);
+	if (end) {
+		sf::View tmp = window.getView();
+		window.setView(window.getDefaultView());
+		target.draw(victoryBackground);
+		window.setView(tmp);
+		return;
+	}
 	if (!player->isAlive)
 	{
 		sf::View tmp = window.getView();

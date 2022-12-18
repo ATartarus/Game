@@ -60,10 +60,12 @@ void Player::updateMovement()
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
 		{
 			moveLeft();
+			if (stepDelay.getElapsedTime().asSeconds() > 0.55 && velocity.y == 0) { step.play(); stepDelay.restart(); }
 		}
 		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
 		{
 			moveRight();
+			if (stepDelay.getElapsedTime().asSeconds() > 0.55 && velocity.y == 0) { step.play(); stepDelay.restart(); }
 		}
 	}
 

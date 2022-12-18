@@ -2,11 +2,13 @@
 
 /*  <Constructors/Destructors>  */
 
-Map::Map(const char* map)
+Map::Map(const char* map) :
+	name(map)
 {
 	foregroundTiles  = nullptr;
 	backgroundLayers = nullptr;
 	objects		     = nullptr;
+	exits			 = nullptr;
 	hitBoxesVisible  = false;
 	originsVisible   = false;
 	viewFollow		 = false;
@@ -20,7 +22,7 @@ Map::~Map()
 	deleteForegroundTiles();
 	deleteBackgroundLayers();
 	delete objects;
-	delete exit;
+	delete exits;
 }
 
 
@@ -127,6 +129,7 @@ void Map::loadMap(const char* map)
 		{
 			delete objects;
 			objects = new std::vector<sf::Sprite>;
+			exits = new std::vector<Exit>;
 			tinyxml2::XMLElement* object = layer->FirstChildElement();
 			do {
 				loadObject(object);
@@ -239,12 +242,12 @@ void Map::loadObject(tinyxml2::XMLElement* object)
 {
 	if (object->Attribute("class") && static_cast<std::string>(object->Attribute("class")) == "exit")
 	{
-		exit = new Exit(object->FindAttribute("x")->IntValue(),
+		Exit tmp = Exit(object->FindAttribute("x")->IntValue(),
 						object->FindAttribute("y")->IntValue(),
 						object->FindAttribute("width")->FloatValue(),
 						object->FindAttribute("height")->FloatValue(),
 						findProperty(object, "destination")->Attribute("value"));
-
+		exits->push_back(tmp);
 		return;
 	}
 
@@ -338,7 +341,8 @@ sf::Vector2f Map::getActualTileSize() const
 {
 	sf::Vector2f res(0.0f, 0.0f);
 	for (int i = 0; i < foregroundTiles->size() && !res.x; i++) {
-		for (int j = 0; j < (*foregroundTiles)[0].size() && !res.x && (*foregroundTiles)[i][j]; j++) {
+		for (int j = 0; j < (*foregroundTiles)[0].size() && !res.x; j++) {
+			if ((*foregroundTiles)[i][j] == nullptr) continue;
 			res = (*foregroundTiles)[i][j]->getActualBounds();
 		}
 	}
@@ -388,12 +392,16 @@ void Map::onWindowResize(sf::Vector2f scale)
 	backgroundImage.sprite.setScale(backgroundImage.localScale.x * scale.x, backgroundImage.localScale.y * scale.y);
 	backgroundImage.sprite.setPosition(backgroundImage.sprite.getPosition().x * prodCoeff.x, backgroundImage.sprite.getPosition().y * prodCoeff.y);
 
+	for (auto& exit : *exits) {
+		exit.rect.left = exit.rect.left * prodCoeff.x;
+		exit.rect.top = exit.rect.top * prodCoeff.y;
+		exit.rect.width = exit.rect.width * prodCoeff.x;
+		exit.rect.height = exit.rect.height * prodCoeff.y;
+	}
+
 	if (exit)
 	{
-		exit->rect.left = exit->rect.left * prodCoeff.x;
-		exit->rect.top = exit->rect.top * prodCoeff.y;
-		exit->rect.width = exit->rect.width * prodCoeff.x;
-		exit->rect.height = exit->rect.height * prodCoeff.y;
+
 	}
 
 
@@ -455,14 +463,16 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 
 
-	if (hitBoxesVisible && exit)
+	if (hitBoxesVisible)
 	{
-		sf::RectangleShape tmp(exit->rect.getSize());
-		tmp.setPosition(exit->rect.getPosition());
-		tmp.setFillColor(sf::Color::Transparent);
-		tmp.setOutlineColor(sf::Color::Green);
-		tmp.setOutlineThickness(1.0f);
-		target.draw(tmp);
+		for (auto& exit : *exits) {
+			sf::RectangleShape tmp(exit.rect.getSize());
+			tmp.setPosition(exit.rect.getPosition());
+			tmp.setFillColor(sf::Color::Transparent);
+			tmp.setOutlineColor(sf::Color::Green);
+			tmp.setOutlineThickness(1.0f);
+			target.draw(tmp);
+		}
 	}
 }
 
