@@ -7,6 +7,8 @@ class Creature;
 class Collider
 {
 private:
+	sf::Vector2i direction;
+private:
 	Creature* creature;
 	std::vector<std::vector<Tile*>>* tiles;
 	sf::Vector2f tileSize;

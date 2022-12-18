@@ -7,6 +7,9 @@ class Player : public Creature
 private:
 	void updateMovement();
 	void initVariables() override;
+
+	sf::Clock jumpDelay;
+
 public:
 	Player(sf::Texture* texture, std::vector<std::vector<Tile*>>& tiles, const float& deltaTime);
 	~Player();

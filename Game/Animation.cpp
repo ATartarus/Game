@@ -1,7 +1,7 @@
 #include "Animation.h"
 
-Animation::Animation(sf::Sprite& sprite, const float& deltaTime) :
-	sprite(sprite), frame(sprite.getTextureRect()), deltaTime(deltaTime)
+Animation::Animation(sf::Sprite& sprite, const float& staggerTime, const float& deltaTime) :
+	sprite(sprite), frame(sprite.getTextureRect()), staggerTime(staggerTime), deltaTime(deltaTime)
 {
 	initVariables();
 }
@@ -13,13 +13,36 @@ void Animation::initVariables()
 	totalJumpTime = -1.0f;
 	totalFallTime = -1.0f;
 	totalGuardTime = 0.0f;
+	totalInjuryTime = -1.0f;
 }
 
 
-void Animation::animate(Move_State state)
+void Animation::animate(Creature_State state)
 {
-	switch (state) {
-	case Move_State::IDLE:
+	if ((state & Creature_State::INJURED) == Creature_State::INJURED)
+	{
+		if (totalInjuryTime == -1) {
+			frame.left = -40;
+			totalInjuryTime = injurySwitchTime;
+		}
+		totalInjuryTime += deltaTime;
+		if (totalInjuryTime >= injurySwitchTime)
+		{
+			totalInjuryTime -= injurySwitchTime;
+			frame.top = 250;
+			frame.left += 40;
+			if (frame.left >= 80) {
+				frame.left = 0;
+				return;
+			}
+		}
+		totalIdleTime = -1;
+		totalRunTime = -1;
+		totalJumpTime = -1;
+		totalFallTime = -1;
+	}
+	else if ((state & Creature_State::IDLE) == Creature_State::IDLE)
+	{
 		if (totalIdleTime == -1) {
 			frame.left = -40;
 			totalIdleTime = idleSwitchTime;
@@ -38,8 +61,10 @@ void Animation::animate(Move_State state)
 		totalRunTime = -1;
 		totalJumpTime = -1;
 		totalFallTime = -1;
-		break;
-	case Move_State::JUMPING:
+		totalInjuryTime = -1;
+	}
+	switch (state) {
+	case Creature_State::JUMPING:
 		if (totalJumpTime == -1) {
 			frame.left = -40;
 			totalJumpTime = jumpSwitchTime;
@@ -52,14 +77,15 @@ void Animation::animate(Move_State state)
 			frame.top = 100;
 			frame.left += 40;
 			if (frame.left > 80) {
-				frame.left = 0;
+				frame.left = 80;
 			}
 		}
 		totalIdleTime = -1;
 		totalRunTime = -1;
 		totalFallTime = -1;
+		totalInjuryTime = -1;
 		break;
-	case Move_State::FALLING:
+	case Creature_State::FALLING:
 		if (totalFallTime == -1) {
 			totalFallTime = 0;
 		}
@@ -74,8 +100,9 @@ void Animation::animate(Move_State state)
 		totalIdleTime = -1;
 		totalRunTime = -1;
 		totalJumpTime = -1;
+		totalInjuryTime = -1;
 		break;
-	case Move_State::MOVING_RIGHT:
+	case Creature_State::MOVING_RIGHT:
 		if (totalRunTime == -1) {
 			frame.left = -40;
 			totalRunTime = runSwitchTime;
@@ -94,8 +121,9 @@ void Animation::animate(Move_State state)
 		totalIdleTime = -1;
 		totalJumpTime = -1;
 		totalFallTime = -1;
+		totalInjuryTime = -1;
 		break;
-	case Move_State::MOVING_LEFT:
+	case Creature_State::MOVING_LEFT:
 		if (totalRunTime == -1) {
 			frame.left = -40;
 			totalRunTime = runSwitchTime;
@@ -114,10 +142,12 @@ void Animation::animate(Move_State state)
 		totalIdleTime = -1;
 		totalJumpTime = -1;
 		totalFallTime = -1;
+		totalInjuryTime = -1;
 		break;
 	}
 	sprite.setTextureRect(frame);
 }
+
 
 void Animation::guardEffect()
 {

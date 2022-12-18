@@ -12,7 +12,8 @@ Player::Player(sf::Texture* texture, std::vector<std::vector<Tile*>>& tiles, con
 			   deltaTime)
 {
 	initVariables();
-	//this->setScale(2.0f, 2.0f);
+	collider = new Collider(*this, tiles);
+	animation = new Animation(this->sprite, staggerTime, deltaTime);
 }
 
 Player::~Player()
@@ -21,10 +22,12 @@ Player::~Player()
 
 void Player::initVariables()
 {
-	staggerTime = 0.5f;
+	Creature::initVariables();
+	staggerTime = 2.0f;
 	velocityMax = 160.0f;
 	acceleration.x = 10.0f;
-	deceleration = acceleration.x * 3.0f;
+	deceleration = sf::Vector2f(acceleration.x * 3, 10.f);
+	staggered = false;
 }
 
 //Update
@@ -33,24 +36,35 @@ void Player::update()
 {
 	updateMovement();
 	updateCollision();
-	if (stagger.getElapsedTime().asSeconds() < staggerTime)
+
+
+	if (stagger.getElapsedTime().asSeconds() < staggerTime && m_health != 10)
+	{
+		if (stagger.getElapsedTime().asSeconds() > staggerTime / 2.0f) staggered = false;
 		animation->guardEffect();
+	}
 	else sprite.setColor(sf::Color::White);
+	
+	
+	animation->animate(state);
 }
 
 void Player::updateMovement()
 {
-	moveState = Move_State::IDLE;
+    state = Creature_State::IDLE;
 
 	/*  <Velocity.x calculations>  */
 
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+	if (!staggered)
 	{
-		moveLeft();
-	}
-	else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
-	{
-		moveRight();
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::A) || sf::Keyboard::isKeyPressed(sf::Keyboard::Left))
+		{
+			moveLeft();
+		}
+		else if (sf::Keyboard::isKeyPressed(sf::Keyboard::D) || sf::Keyboard::isKeyPressed(sf::Keyboard::Right))
+		{
+			moveRight();
+		}
 	}
 
 
@@ -58,38 +72,44 @@ void Player::updateMovement()
 		velocity.x = (velocity.x < 0) ? -velocityMax : velocityMax;
 
 
-	if (moveState == Move_State::IDLE && velocity.x != 0) {
-		velocity.x += (velocity.x < 0) ? deceleration : -deceleration;
-		if (fabs(velocity.x) < deceleration) velocity.x = 0;
+	if (state == Creature_State::IDLE && velocity.x != 0) {
+		velocity.x += (velocity.x < 0) ? deceleration.x : -deceleration.x;
+		if (fabs(velocity.x) < deceleration.x) velocity.x = 0;
 	}
 
-	if (stagger.getElapsedTime().asSeconds() < staggerTime / 2.0f) velocity.x = 0.0f;
 
 	/*  </Velocity.x calculations>  */
 
 
 	/*  <Velocity.y calculations>  */
 
-	if (!sf::Keyboard::isKeyPressed(sf::Keyboard::W) && !sf::Keyboard::isKeyPressed(sf::Keyboard::Up) && (velocity.y >= 0.0f && velocity.y < 5.0f)) {
+	if (!sf::Keyboard::isKeyPressed(sf::Keyboard::W) && !sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) {
 		jump.keyHold = false;
 	}
-	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up))
+	if ((sf::Keyboard::isKeyPressed(sf::Keyboard::W) || sf::Keyboard::isKeyPressed(sf::Keyboard::Up)) && !staggered)
 	{
-		if (velocity.y < 0) jump.keyHold = true;
-		moveJump();
+		if (velocity.y < 0 && jumpDelay.getElapsedTime().asSeconds() > 0.1 && jump.keyHold)
+		{
+			velocity.y += velocity.y * 2 * deltaTime;
+		}		
+		if (velocity.y == 0 && jump.allow) {
+			velocity.y = -sqrtf(2.0f * g * jump.height);
+			jump.allow = false;
+			jump.keyHold = true;
+
+			jumpDelay.restart();
+		}
 	}
-	
-	if (velocity.y < 0) 		moveState = Move_State::JUMPING;
-	else if (velocity.y > 0)	
-		moveState = Move_State::FALLING;
-	velocity.y += acceleration.y * deltaTime;
+
+
+	if (velocity.y < 0) 		state = Creature_State::JUMPING;
+	else if (velocity.y > 0)	state = Creature_State::FALLING;
+	velocity.y += g * deltaTime;
 
 
 	/*  </Velocity.y calculations>  */
 
 	this->move(velocity * deltaTime);
-
-	animation->animate(moveState);
 }
 
 

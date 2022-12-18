@@ -7,13 +7,15 @@
 #include <iostream>
 
 
-enum class Move_State : uint32_t
+enum class Creature_State : uint32_t
 {
-	IDLE = 0,
+	NONE = 0,
 	MOVING_LEFT = 1,
 	MOVING_RIGHT = (1 << 1),
 	JUMPING = (1 << 2),
 	FALLING = (1 << 3),
+	INJURED = (1 << 4),
+	IDLE = (1 << 5),
 };
 
 enum class Origin_Pos : uint32_t
@@ -35,6 +37,17 @@ enum class Switch_Flag : uint32_t
 	EXIT,
 };
 
+
+inline Creature_State operator |=(Creature_State& left, const Creature_State& right)
+{
+	left = static_cast<Creature_State>(static_cast<uint32_t>(left) | static_cast<uint32_t>(right));
+	return left;
+}
+
+inline Creature_State operator& (const Creature_State& left, const Creature_State& right)
+{
+	return static_cast<Creature_State>(static_cast<uint32_t>(left) & static_cast<uint32_t>(right));
+}
 
 constexpr inline bool operator==(const uint32_t& left, const Origin_Pos& right)
 {

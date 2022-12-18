@@ -70,7 +70,7 @@ void Controller::switchWindow()
 
 	if (switchFlag == Switch_Flag::GAME)
 	{
-		currentWindow = new Game(window, switchFlag, deltaTime);
+		currentWindow = new Game(window, switchFlag, globalVolume, deltaTime);
 	}
 	else if (switchFlag == Switch_Flag::MAIN_MENU)
 	{

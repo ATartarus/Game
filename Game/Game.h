@@ -14,16 +14,20 @@ private:
 
 	sf::Sprite gameOverBackground;
 
+	std::vector<sf::Sprite> hearts;
+
 	void changeMap();
 	void focusView();
 	void updateView();
 	void updateConsole();
 	void resizeContent(sf::Vector2f scale);
 
+	void updateHearts();
+
 	void loadTextures() override;
 	void loadSounds() override;
 public:
-	Game(sf::RenderWindow& window, Switch_Flag& flag, const float& deltaTime);
+	Game(sf::RenderWindow& window, Switch_Flag& flag, float globalVolume, const float& deltaTime);
 	~Game();
 
 

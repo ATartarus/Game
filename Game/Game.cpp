@@ -4,13 +4,16 @@
 /*  <Constructors/Destructors>  */
 
 
-Game::Game(sf::RenderWindow& window, Switch_Flag& flag, const float& deltaTime) : Scene(window, flag),
+Game::Game(sf::RenderWindow& window, Switch_Flag& flag, float globalVolume, const float& deltaTime) : Scene(window, flag),
 	deltaTime(deltaTime)
 {
 	loadTextures();
+	loadSounds();
 	map = new Map("test.tmx");
 	player = new Player(&textures["player"], *map->foregroundTiles, deltaTime);
 	player->setPosition(100.0f, 100.0f);
+	player->setSoundBuffer(sounds["injury"]);
+	player->setVolume(globalVolume);
 	console = new Console();
 
 
@@ -18,6 +21,10 @@ Game::Game(sf::RenderWindow& window, Switch_Flag& flag, const float& deltaTime) 
 	gameOverBackground.setScale(window.getSize().x / gameOverBackground.getGlobalBounds().width,
 								window.getSize().y / gameOverBackground.getGlobalBounds().height);
 	gameOverBackground.setColor(sf::Color(255, 0, 0, 155));
+
+
+	
+
 
 	sf::Vector2f scale = sf::Vector2f(window.getSize()) / resolution._default;
 	if (m_contentScale != scale)
@@ -54,11 +61,23 @@ void Game::loadTextures()
 	}
 
 	textures.emplace("background", tmp);
+
+
+	if (!tmp.loadFromFile("Texture\\heart.png")) {
+		std::cout << "Game::loadTextures could not load heart.png" << "\n";
+		return;
+	}
+
+	textures.emplace("heart", tmp);
 }
 
 void Game::loadSounds()
 {
-
+	sf::SoundBuffer tmp;
+	if (!tmp.loadFromFile("Audio\\injury.wav")) {
+		std::cout << "MainMenu::loadSounds could not load injury.wav" << "\n";
+	}
+	sounds.emplace("injury", tmp);
 }
 
 
@@ -77,7 +96,11 @@ void Game::update()
 
 	updateEvent();
 
-	if (player->isAlive) player->update();
+	if (player->isAlive)
+	{
+		player->update();
+		updateHearts();
+	}
 
 	if (map->exit != nullptr &&
 		(player->getPosition().x >= map->exit->rect.left && player->getPosition().x <= map->exit->rect.left + map->exit->rect.width) &&
@@ -150,6 +173,18 @@ void Game::updateConsole()
 	console->setOutput("DeltaTime: " + std::to_string(deltaTime) + "\n");
 }
 
+
+void Game::updateHearts()
+{
+	hearts.clear();
+	for (unsigned int i = player->getHP(); i > 0; i--)
+	{
+		sf::Sprite tmp(textures["heart"]);
+		tmp.setScale(m_contentScale);
+		tmp.setPosition(window.getSize().x - i * (tmp.getGlobalBounds().width + 5), 5);
+		hearts.push_back(tmp);
+	}
+}
 
 
 /*  </Update methods>  */
@@ -226,18 +261,19 @@ void Game::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
 	target.draw(*map);
 	target.draw(*player);
-	if (console->isEnabled)
-	{
-		sf::View tmp = window.getView();
-		window.setView(window.getDefaultView());
-		target.draw(*console);
-		window.setView(tmp);
-	}
 	if (!player->isAlive)
 	{
 		sf::View tmp = window.getView();
 		window.setView(window.getDefaultView());
 		target.draw(gameOverBackground);
+		window.setView(tmp);
+	}
+	else 
+	{
+		sf::View tmp = window.getView();
+		window.setView(window.getDefaultView());
+		if (console->isEnabled) target.draw(*console);
+		for (auto& hp : hearts) target.draw(hp);
 		window.setView(tmp);
 	}
 }

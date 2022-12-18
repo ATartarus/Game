@@ -11,8 +11,6 @@ Creature::Creature(sf::Vector2f hitBox,
 			deltaTime(deltaTime)
 {
 	initVariables();
-	animation = new Animation(this->sprite, deltaTime);
-	collider = new Collider(*this, tiles);
 }
 
 Creature::~Creature()
@@ -24,40 +22,37 @@ Creature::~Creature()
 
 void Creature::initVariables()
 {
-	m_health = 10.0f;
+	m_health = 5;
 	staggerTime = 2.0f;
 
 	isAlive = true;
-	moveState = Move_State::IDLE;
+	state = Creature_State::IDLE;
 	velocityMax = 100.0f;
-	acceleration = sf::Vector2f(5.0f, 981.0f);
-	deceleration = acceleration.x * 3;
-	jump.height = 100.f;
+	g = 981.0f;
+	jump.height = 80.f;
+	acceleration = sf::Vector2f(5.0f, g);
+	deceleration = sf::Vector2f(acceleration.x * 3, 10.0f);
 	jump.allow = true;
 	jump.keyHold = false;
+	staggered = false;
+
 }
 
 
 void Creature::moveLeft()
 {
-	velocity.x -= acceleration.x;
-	moveState = Move_State::MOVING_LEFT;
+	if (velocity.y != 0) velocity.x -= acceleration.x / deceleration.y;
+	else velocity.x -= acceleration.x;
+	state = Creature_State::MOVING_LEFT;
 	this->flip(false);
 }
 
 void Creature::moveRight()
 {
-	velocity.x += acceleration.x;
-	moveState = Move_State::MOVING_RIGHT;
+	if (velocity.y != 0) velocity.x += acceleration.x / deceleration.y;
+	else velocity.x += acceleration.x;
+	state = Creature_State::MOVING_RIGHT;
 	this->flip(true);
-}
-
-void Creature::moveJump()
-{
-	if (velocity.y == 0 && jump.allow) {
-		velocity.y = -sqrtf(2.0f * acceleration.y * jump.height);
-		jump.allow = false;
-	}
 }
 
 
@@ -74,17 +69,37 @@ void Creature::yCollisionCheck(sf::Vector2i& direction)
 	}
 }
 
+unsigned int Creature::getHP()
+{
+	return m_health;
+}
+
 void Creature::onDamageRecieve()
 {
+	
 	if (stagger.getElapsedTime().asSeconds() >= staggerTime)
 	{
 		stagger.restart();
-		m_health -= 1.0f;
-
-
+		m_health -= 1;
+		injury.play();
 
 		if (m_health <= 0) isAlive = false;
 	}
+	else if (stagger.getElapsedTime().asSeconds() < staggerTime / 2.0f) {
+		state |= Creature_State::INJURED;
+		staggered = true;
+	}
+	else staggered = false;
+}
+
+void Creature::setSoundBuffer(sf::SoundBuffer& buffer)
+{
+	injury.setBuffer(buffer);
+}
+
+void Creature::setVolume(float vol)
+{
+	injury.setVolume(vol);
 }
 
 void Creature::onWindowResize(sf::Vector2f scale)
@@ -94,7 +109,9 @@ void Creature::onWindowResize(sf::Vector2f scale)
 	velocity.y *= prodCoeff.y;
 	velocityMax *= prodCoeff.x;
 	acceleration *= prodCoeff.x;
-	deceleration *= prodCoeff.x;
+	deceleration.x *= prodCoeff.x;
+	deceleration.y *= fabs(m_scale.x) / scale.x;
+	g *= prodCoeff.y;
 	jump.height *= prodCoeff.y;
 	collider->onMapScaleChange();
 }

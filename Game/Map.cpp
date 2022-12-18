@@ -207,11 +207,27 @@ void Map::loadTiles(std::string& csv, bool background)
 			}
 			else
 			{
-				Tile* tmp = new Tile(sf::Vector2f(tileSheet.tile.x, tileSheet.tile.y),
-									 &tileSheet.texture,
-									 sf::IntRect(spos, tileSheet.tile));
-				if (csvMap[i][j] == 22)	tmp->isDamaging = true;
-				tmp->setPosition(wpos.x + tileSheet.tile.x / 2.0f, wpos.y + tileSheet.tile.y / 2.0f);
+				sf::Vector2f hitBox(tileSheet.tile.x, tileSheet.tile.y);
+				wpos.x += tileSheet.tile.x / 2.0f;
+				wpos.y += tileSheet.tile.y / 2.0f;
+				bool damaging = false;
+
+
+				if (csvMap[i][j] >= 22 && csvMap[i][j] <= 25) {
+					damaging = true;
+					if (csvMap[i][j] == 22 || csvMap[i][j] == 24) {
+						hitBox.y /= 2.0f;
+					}
+					if (csvMap[i][j] == 23 || csvMap[i][j] == 25) {
+						hitBox.x /= 2;
+					}
+				}
+
+				Tile* tmp = new Tile(hitBox,
+					&tileSheet.texture,
+					sf::IntRect(spos, tileSheet.tile));
+				tmp->setPosition(wpos);
+				tmp->isDamaging = damaging;
 				(*foregroundTiles)[i][j] = tmp;
 			}
 		}

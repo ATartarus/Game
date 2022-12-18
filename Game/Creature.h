@@ -8,18 +8,22 @@ class Creature : public Entity
 {
 protected:
 	sf::Texture texture;
-	Move_State moveState;
+	Creature_State state;
 	Animation* animation;
 
 	const float& deltaTime;
-	float m_health;
+	unsigned int m_health;
 	sf::Clock stagger;
 	float staggerTime;
+	bool staggered;
+
+	sf::Sound injury;
 
 	sf::Vector2f velocity;
 	sf::Vector2f acceleration;
+	sf::Vector2f deceleration;
+	float g;
 	float velocityMax;
-	float deceleration;
 	struct Jump {
 		float height;
 		bool allow;
@@ -31,7 +35,6 @@ protected:
 	virtual void yCollisionCheck(sf::Vector2i& direction);
 	void moveLeft();
 	void moveRight();
-	void moveJump();
 public:
 	Creature(sf::Vector2f hitBox,
 			 sf::Texture* texture,
@@ -44,6 +47,10 @@ public:
 	Collider* collider;
 
 	bool isAlive;
+
+	unsigned int getHP();
+	void setSoundBuffer(sf::SoundBuffer& buffer);
+	void setVolume(float vol);
 
 	virtual void update() = 0;
 

@@ -10,6 +10,8 @@ Collider::Collider(Creature& creature, std::vector<std::vector<Tile*>>& tiles) :
 			tileSize = (*this->tiles)[i][j]->getActualBounds();
 		}
 	}
+
+	direction = sf::Vector2i(0, 0);
 }
 
 void Collider::mapChange(std::vector<std::vector<Tile*>>& tile)
@@ -30,6 +32,8 @@ void Collider::onMapScaleChange()
 
 sf::Vector2i Collider::Check()
 {
+	direction = sf::Vector2i(0, 0);
+
 	int Y1 = static_cast<int>((creature->getPosition().y - creature->getActualBounds().y) / tileSize.y);
 	int Y2 = static_cast<int>(creature->getPosition().y / tileSize.y + 1);
 	int X1 = static_cast<int>((creature->getPosition().x - creature->getActualBounds().x / 2.0f) / tileSize.x);
@@ -39,24 +43,25 @@ sf::Vector2i Collider::Check()
 	if (X1 < 0) X1 = 0;
 	if (X2 >= (*tiles)[0].size()) X2 = static_cast<int>(tiles[0].size()) - 1;
 
-	sf::Vector2i direction(0, 0);
-
+	sf::Vector2i* tmpDir = new sf::Vector2i(0, 0);
 	for (int i = Y1; i <= Y2; i++) {
 		for (int j = X1; j <= X2; j++) {
 			if ((*tiles)[i][j] == nullptr) continue;
-			calculate(*(*tiles)[i][j], direction);
-			if ((*tiles)[i][j]->isDamaging && (direction.x != 0 || direction.y != 0))
+			calculate(*(*tiles)[i][j], *tmpDir);
+			if ((*tiles)[i][j]->isDamaging && (tmpDir->x != 0 || tmpDir->y != 0))
 			{
 				creature->onDamageRecieve();
 				direction.x = 0; direction.y = 0;
 			}
+			tmpDir->x = 0; tmpDir->y = 0;
 		}
 	}
+	delete tmpDir;
 
 	return direction;
 }
 
-void Collider::calculate(Tile& tile, sf::Vector2i& direction)
+void Collider::calculate(Tile& tile, sf::Vector2i& dir)
 {
 	sf::Vector2f delta = sf::Vector2f(creature->getPosition().x - tile.getPosition().x,	//if > 0 player is on the RIGHT SIDE
 									  creature->getPosition().y - tile.getPosition().y);	//if > 0 player is on the BOTTOM SIDE
@@ -75,11 +80,13 @@ void Collider::calculate(Tile& tile, sf::Vector2i& direction)
 			{
 				shift.x = fabs(intersection.x);
 				direction.x = -1;
+				dir.x = -1;
 			}
 			else
 			{
 				shift.x = intersection.x;
 				direction.x = 1;
+				dir.x = 1;
 			}
 		}
 		else
@@ -88,11 +95,13 @@ void Collider::calculate(Tile& tile, sf::Vector2i& direction)
 			{
 				shift.y = fabs(intersection.y);
 				direction.y = -1;
+				dir.y = -1;
 			}
 			else
 			{
 				shift.y = intersection.y;
 				direction.y = 1;
+				dir.y = 1;
 			}
 		}
 		if (!tile.isDamaging) creature->move(shift);
