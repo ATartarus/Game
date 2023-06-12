@@ -1,8 +1,8 @@
 #include "Collider.h"
 #include "Creature.h"
 
-Collider::Collider(Creature& creature, std::vector<std::vector<Tile*>>& tiles) :
-	creature(&creature), tiles(&tiles) 
+Collider::Collider(Creature& creature, Map& map) :
+	creature(&creature), map(&map), tiles(map.foregroundTiles)
 {
 	tileSize = sf::Vector2f(0.0f, 0.0f);
 	for (int i = 0; i < this->tiles->size() && !tileSize.x; i++) {
@@ -15,9 +15,10 @@ Collider::Collider(Creature& creature, std::vector<std::vector<Tile*>>& tiles) :
 	direction = sf::Vector2i(0, 0);
 }
 
-void Collider::mapChange(std::vector<std::vector<Tile*>>& tile)
+void Collider::mapChange(Map& map)
 {
-	this->tiles = &tile;
+	this->map = &map;
+	tiles = map.foregroundTiles;
 	onMapScaleChange();
 }
 
@@ -58,6 +59,25 @@ sf::Vector2i Collider::Check()
 			tmpDir->x = 0; tmpDir->y = 0;
 		}
 	}
+	for (auto& slider : *map->sliders)
+	{
+		for (int i = slider.coreTile.y - 1; i <= slider.coreTile.y + slider.size.y; i++)
+		{
+			for (int j = slider.coreTile.x - 1; j <= slider.coreTile.x + slider.size.x; j++)
+			{
+				Tile* tile = (*tiles)[i][j];
+				if (!tile) continue;
+				calculate(*(*tiles)[i][j], *tmpDir);
+				if ((*tiles)[i][j]->isDamaging && (tmpDir->x != 0 || tmpDir->y != 0))
+				{
+					creature->onDamageRecieve();
+					direction.x = 0; direction.y = 0;
+				}
+				tmpDir->x = 0; tmpDir->y = 0;
+			}
+		}
+	}
+
 	delete tmpDir;
 
 	return direction;

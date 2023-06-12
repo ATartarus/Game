@@ -60,7 +60,7 @@ void Creature::yCollisionCheck(sf::Vector2i& direction)
 {
 	if (direction.y != 0) {
 		if (direction.y == 1 && velocity.y > 0) {		//Hitting tile from top
-			if (velocity.y > m_scale.y * 10.0f) { step.play(); stepDelay.restart(); }
+			if (velocity.y > m_scale.y * 32.0f) { step.play(); stepDelay.restart(); }
 			velocity.y = 0;
 			if (!jump.keyHold) jump.allow = true;
 		}

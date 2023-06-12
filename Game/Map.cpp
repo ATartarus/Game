@@ -23,6 +23,7 @@ Map::~Map()
 	deleteBackgroundLayers();
 	delete objects;
 	delete exits;
+	delete sliders;
 }
 
 
@@ -130,6 +131,7 @@ void Map::loadMap(const char* map)
 			delete objects;
 			objects = new std::vector<sf::Sprite>;
 			exits = new std::vector<Exit>;
+			sliders = new std::vector<Slider>;
 			tinyxml2::XMLElement* object = layer->FirstChildElement();
 			do {
 				loadObject(object);
@@ -219,10 +221,10 @@ void Map::loadTiles(std::string& csv, bool background)
 				if (csvMap[i][j] >= 22 && csvMap[i][j] <= 25) {
 					damaging = true;
 					if (csvMap[i][j] == 22 || csvMap[i][j] == 24) {
-						hitBox.y /= 2.0f;
+						hitBox.y /= 3.0f;
 					}
 					if (csvMap[i][j] == 23 || csvMap[i][j] == 25) {
-						hitBox.x /= 2;
+						hitBox.x /= 3.0f;
 					}
 				}
 
@@ -240,17 +242,61 @@ void Map::loadTiles(std::string& csv, bool background)
 
 void Map::loadObject(tinyxml2::XMLElement* object)
 {
-	if (object->Attribute("class") && static_cast<std::string>(object->Attribute("class")) == "exit")
-	{
-		Exit tmp = Exit(object->FindAttribute("x")->IntValue(),
-						object->FindAttribute("y")->IntValue(),
-						object->FindAttribute("width")->FloatValue(),
-						object->FindAttribute("height")->FloatValue(),
-						findProperty(object, "destination")->Attribute("value"));
-		exits->push_back(tmp);
-		return;
-	}
+	std::string objClass;
 
+	if (object->Attribute("class"))
+	{
+		objClass = static_cast<std::string>(object->Attribute("class"));
+		if (objClass == "exit")
+		{
+			Exit tmp = Exit(object->FindAttribute("x")->IntValue(),
+				object->FindAttribute("y")->IntValue(),
+				object->FindAttribute("width")->FloatValue(),
+				object->FindAttribute("height")->FloatValue(),
+				findProperty(object, "destination")->Attribute("value"));
+			exits->push_back(tmp);
+		}
+		else if (objClass == "slider")
+		{
+			Slider tmp{};
+			object->QueryAttribute("x", &tmp.ltEdge.x);
+			object->QueryAttribute("y", &tmp.ltEdge.y);
+			tmp.coreTile.x = tmp.ltEdge.x / tileSheet.tile.x;
+			tmp.coreTile.y = tmp.ltEdge.y / tileSheet.tile.y;
+
+			object->QueryAttribute("width", &tmp.size.x);
+			object->QueryAttribute("height", &tmp.size.y);
+			tmp.size.x = tmp.size.x / tileSheet.tile.x;
+			tmp.size.y = tmp.size.y / tileSheet.tile.y;
+
+			findProperty(object, "stopX")->QueryAttribute("value", &tmp.rbEdge.x);
+			findProperty(object, "stopY")->QueryAttribute("value", &tmp.rbEdge.y);
+			findProperty(object, "velocityX")->QueryAttribute("value", &tmp.velocity.x);
+			findProperty(object, "velocityY")->QueryAttribute("value", &tmp.velocity.y);
+
+			sf::Vector2f swap{};
+			if (tmp.velocity.x < 0) {
+				swap = tmp.ltEdge;
+				tmp.ltEdge.x = tmp.rbEdge.x;
+				tmp.rbEdge.x = swap.x;
+			}
+			if (tmp.velocity.y < 0) {
+				swap = tmp.ltEdge;
+				tmp.ltEdge.y = tmp.rbEdge.y;
+				tmp.rbEdge.y = swap.y;
+			}
+
+			tmp.ltEdge.x += tileSheet.tile.x / 2.0f;
+			tmp.ltEdge.y += tileSheet.tile.y / 2.0f;
+			tmp.rbEdge.x -= tileSheet.tile.x / 2.0f;
+			tmp.rbEdge.y -= tileSheet.tile.y / 2.0f;
+
+			sliders->push_back(tmp);
+		}
+	}
+	//implementation of non-active sprite objects, need to reconsider this
+
+	/*
 	sf::Sprite tmp = sf::Sprite();
 	sf::Vector2f wpos = sf::Vector2f(object->FindAttribute("x")->FloatValue(),
 									 object->FindAttribute("y")->FloatValue());
@@ -281,6 +327,7 @@ void Map::loadObject(tinyxml2::XMLElement* object)
 		         object->FindAttribute("height")->FloatValue() / tileSheet.tile.y);
 	tmp.setPosition(wpos);
 	objects->push_back(tmp);
+	*/
 }
 
 /*  </Loader methods>  */
@@ -331,6 +378,53 @@ bool Map::parseColor(sf::Color& destination, const char* color)
 
 
 /*  <Accessors>  */
+
+void Map::update(float dt)
+{
+	for (auto& slider : *sliders)
+	{
+		auto sliderMove = [this, &slider, dt](sf::Vector2f velocity)
+		{
+			for (int i = slider.coreTile.y - 1; i <= slider.coreTile.y + slider.size.y; i++)
+			{
+				for (int j = slider.coreTile.x - 1; j <= slider.coreTile.x + slider.size.x; j++)
+				{
+					Tile* tile = (*foregroundTiles)[i][j];
+					if (!tile) continue;
+					sf::Vector2f shift = velocity * dt;
+
+					tile->move(shift);
+				}
+			}
+		};
+
+		sliderMove(slider.velocity);
+		Tile* tile = (*foregroundTiles)[slider.coreTile.y][slider.coreTile.x];
+
+		sf::Vector2f tilePos = tile->getPosition();
+		sf::Vector2f shift{};
+
+		const float eps = 0.00001;
+		if (slider.ltEdge.x - tilePos.x > eps)
+			shift.x = slider.ltEdge.x - tilePos.x;
+		else if (slider.rbEdge.x - tilePos.x < eps)
+			shift.x = slider.rbEdge.x - tilePos.x;
+
+		if (slider.ltEdge.y - tilePos.y > eps)
+			shift.y = slider.ltEdge.y - tilePos.y;
+		else if (slider.rbEdge.y - tilePos.y < eps)
+			shift.y = slider.rbEdge.y - tilePos.y;
+
+		if (shift.x != 0.0f) {
+			slider.velocity.x = -slider.velocity.x;
+			sliderMove(shift);
+		}
+		if (shift.y != 0.0f) {
+			slider.velocity.y = -slider.velocity.y;
+			sliderMove(shift);
+		}
+	}
+}
 
 sf::Vector2f Map::getScale() const
 {
@@ -399,11 +493,14 @@ void Map::onWindowResize(sf::Vector2f scale)
 		exit.rect.height = exit.rect.height * prodCoeff.y;
 	}
 
-	if (exit)
-	{
-
+	for (auto& slider : *sliders) {
+		slider.ltEdge.x *= prodCoeff.x;
+		slider.ltEdge.y *= prodCoeff.y;
+		slider.rbEdge.x *= prodCoeff.x;
+		slider.rbEdge.y *= prodCoeff.y;
+		slider.velocity.x *= prodCoeff.x;
+		slider.velocity.y *= prodCoeff.y;
 	}
-
 
 	m_scale = scale;
 }
@@ -461,6 +558,18 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 		}
 	}
 
+	for (auto& slider : *sliders)
+	{
+		for (int i = slider.coreTile.y - 1; i <= slider.coreTile.y + slider.size.y; i++)
+		{
+			for (int j = slider.coreTile.x - 1; j <= slider.coreTile.x + slider.size.x; j++)
+			{
+				Tile* tile = (*foregroundTiles)[i][j];
+				if (!tile) continue;
+				tile->draw(target, states);
+			}
+		}
+	}
 
 
 	if (hitBoxesVisible)

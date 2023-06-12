@@ -1,6 +1,7 @@
 #pragma once
 #include "stdafx.h"
 #include "Creature.h"
+#include "Map.h"
 
 class Player : public Creature
 {
@@ -11,7 +12,7 @@ private:
 	sf::Clock jumpDelay;
 
 public:
-	Player(sf::Texture* texture, std::vector<std::vector<Tile*>>& tiles, const float& deltaTime);
+	Player(sf::Texture* texture, Map& map, const float& deltaTime);
 	~Player();
 
 	void update() override;

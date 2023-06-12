@@ -29,6 +29,15 @@ private:
 		sf::Color tintColor;
 	};
 
+	struct Slider {
+		//Upper-left tile of inner tiles
+		sf::Vector2u coreTile;
+		sf::Vector2u size;
+		sf::Vector2f ltEdge;
+		sf::Vector2f rbEdge;
+		sf::Vector2f velocity;
+	};
+
 private:
 	sf::Vector2f m_actualBounds;
 	std::vector<sf::Sprite>* objects;
@@ -59,9 +68,12 @@ public:
 	std::vector<Exit>* exits;
 
 	std::vector<std::vector<Tile*>>* foregroundTiles;
+	std::vector<Slider>* sliders;
 	bool hitBoxesVisible;
 	bool originsVisible;
 	bool viewFollow;
+
+	void update(float dt);
 
 	sf::Vector2f getScale() const;
 	sf::Vector2f getActualTileSize() const;

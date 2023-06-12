@@ -3,16 +3,16 @@
 
 //Initialization
 
-Player::Player(sf::Texture* texture, std::vector<std::vector<Tile*>>& tiles, const float& deltaTime) : 
+Player::Player(sf::Texture* texture, Map& map, const float& deltaTime) : 
 	    Creature(
 			   sf::Vector2f(15.0f, 42.0f),
 			   texture,
 			   sf::IntRect(0, 0, 40, 50),
-			   tiles,
+			   *map.foregroundTiles,
 			   deltaTime)
 {
 	initVariables();
-	collider = new Collider(*this, tiles);
+	collider = new Collider(*this, map);
 	animation = new Animation(this->sprite, staggerTime, deltaTime);
 }
 
@@ -121,6 +121,8 @@ void Player::updateCollision()
 	sf::Vector2i direction = collider->Check();
 	yCollisionCheck(direction);
 }
+
+
 
 
 std::string Player::getFrameLog()

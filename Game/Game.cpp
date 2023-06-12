@@ -10,7 +10,7 @@ Game::Game(sf::RenderWindow& window, Switch_Flag& flag, float globalVolume, cons
 	loadTextures();
 	loadSounds();
 	map = new Map("test.tmx");
-	player = new Player(&textures["player"], *map->foregroundTiles, deltaTime);
+	player = new Player(&textures["player"], *map, deltaTime);
 	player->setPosition(80.0f, 500.0f);
 	player->setInjuryBuffer(sounds["injury"]);
 	player->setStepBuffer(sounds["step"]);
@@ -109,6 +109,7 @@ void Game::update()
 {
 	console->clearOutput();
 	updateEvent();
+	map->update(deltaTime);
 
 	if (end) return;
 
@@ -242,7 +243,7 @@ void Game::changeMap(Map::Exit& exit)
 		dest->rect.top + dest->rect.height / 2.0f);
 	player->showHitBox = false;
 	player->showOrigin = false;
-	player->collider->mapChange(*map->foregroundTiles);
+	player->collider->mapChange(*map);
 
 	if (map->viewFollow) focusView();
 }
