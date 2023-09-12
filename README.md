@@ -1,4 +1,5 @@
 # My small coursework in the second semester
+Used SFML for basic render and tinyXML to work with map. All buiseness logic is on pure c++
 
 ![image](https://github.com/ATartarus/Game/assets/118668228/198aad39-5347-4465-a4ff-d391720eed8e)
 
